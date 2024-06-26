@@ -1,0 +1,402 @@
+﻿@model SMS.ViewModel.Student.StudentViewModel
+
+
+@{
+	ViewData["Title"] = "Student";
+}
+
+<div class="full-body">
+    <div id="heading" class="main-heading"><h2>Students</h2></div>
+    <div class="panel container-fluid mb-5" id="hidable_details">
+        <div class="panel-heading d-flex align-items-center justify-content-between">
+            <div>
+                <button id="addNew" class="btn me-3 text-light">Add New Student</button>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <select id="pageSize" class="form-select text-dark">
+                        <option value="5" selected>5</option>
+                        <option value="10">10</option>
+                        <option value="15">15</option>
+                    </select>
+                </div>
+                <div class="me-3">
+                    <select id="filterCriteria" class="form-select text-dark">
+                        <option value="" selected>All</option>
+                        <option value="true">Enabled</option>
+                        <option value="false">Disabled</option>
+                    </select>
+                </div>
+                <div class="search-wrapper">
+                    <select id="searchCriteria" class="form-select text-dark me-2">
+                        <option value="" selected disabled>All</option>
+                        <option value="StudentReg">Registration Number</option>
+                        <option value="DisplayName">Display Name</option>
+                    </select>
+                    <input type="text" id="searchQuery" class="form-control" placeholder="Search...">
+                </div>
+            </div>
+        </div>
+    </div>
+
+   @await Html.PartialAsync("_AllStudents")
+
+    <div class="addEdit">
+        <div id="addStudentForm" class="container-fluid" style="display: none;">
+        </div>
+    </div>
+
+    <div id="searchResults"></div>
+
+
+
+</div>
+
+
+
+@section Scripts {
+    <script>
+
+        currentPage = 1;
+        pageSize = 5;
+
+        $(document).ready(function () {
+
+            loadData(currentPage, pageSize);
+
+            $('input[type=text], input[type=email], select').each(function () {
+                var req = $(this).attr('data-val-required');
+                if (undefined != req) {
+                    var label = $('label[for="' + $(this).attr('id') + '"]');
+                    var text = label.text();
+                    if (text.length > 0) {
+                        label.append('<span style="color:red"> *</span>');
+                    }
+                }
+            });
+
+            $('#addNew').click(function () {
+                $('#studentDetails').hide();
+                $('#hidable_details').hide();
+                $('#heading').hide();
+                $.ajax({
+                    url: '/Student/UpsertStudent',
+                    type: 'GET',
+                    success: function (response) {
+                        $('#addStudentForm').html(response);
+                        $.validator.unobtrusive.parse($('#addStudentForm'));
+                        $('#addStudentForm').show();
+                    }
+                });
+            });
+
+
+
+            $('#studentDetails th').click(function () {
+                var column = $(this).index();
+                sortTable(column);
+            });
+
+            //Sorting based on active state
+            $('#filterCriteria').change(function () {
+                loadData(currentPage, pageSize);
+            });
+
+
+            $('#nextButton').click(function () {
+                currentPage++;
+                loadData(currentPage, pageSize);
+            });
+
+            $('#prevButton').click(function () {
+                if (currentPage > 1) {
+                    currentPage--;
+                    loadData(currentPage, pageSize);
+                }
+            });
+
+            $('#pageSize').change(function () {
+                pageSize = parseInt($(this).val());
+                loadData(currentPage, pageSize);
+            });
+
+
+            $('#searchQuery').on('input', function () {
+                var query = $(this).val();
+                var criteria = $('#searchCriteria').val();
+
+                if (query.trim() !== '') {
+                    $.ajax({
+                        url: '/Student/Search',
+                        type: 'GET',
+                        data: { query: query, criteria: criteria },
+                        success: function (response) {
+                            $('#studentDetails').hide();
+                            $('#searchResults').html(response).show();
+
+                        },
+                        error: function (error) {
+                            console.log(error);
+                            Swal.fire('Error!', 'An error occurred while searching.', 'error');
+                        }
+                    });
+                } else {
+                    $('#studentDetails').show();
+                    $('#searchResults').empty().hide();
+
+                }
+            });
+
+        });
+
+        function loadData(pageNumber, pageSize) {
+            function formatDate(dateString) {
+                if (!dateString) return ''; // Handle case where dateString is undefined or null
+
+                var timestamp = parseInt(dateString.replace("/Date(", "").replace(")/", ""));
+                var date = new Date(timestamp);
+                var formattedDate = date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, '0') + '-' + date.getDate().toString().padStart(2, '0');
+                return formattedDate;
+            }
+            var filterCriteria = $('#filterCriteria').val();
+            $.ajax({
+                url: '/Student/DisplayAllStudents',
+                type: 'GET',
+                data: { pageNumber: currentPage, pageSize: pageSize, isActive: filterCriteria },
+                success: function (data) {
+                    if (data.success) {
+                        $('#tableBody').empty();
+                        $('#notFound').hide();
+                        $.each(data.data, function (index, item) {
+                            var editUrl = '/Student/UpsertStudent/' + item.studentID;
+                            var deleteUrl = '/Student/DeleteStudent/' + item.studentID;
+                            var enableButton = item.isEnable ? '<button type="button" class="btn btn-success" onclick="toggleEnable(\'' + item.studentID + '\', false,\'' + item.displayName + '\')"><i class="bi bi-toggle-on"></i></button>' : '<button type="button" class="btn btn-danger" onclick="toggleEnable(\'' + item.studentID + '\', true,\'' + item.displayName + '\')"><i class="bi bi-toggle-off"></i></button>';
+                            var emaillink = '<a href="mailto:' + item.email + '">' + item.email + '</a>';
+                            var contactLink = '<a href="tel:' + item.contactNo + '">' + item.contactNo + '</a>';
+                            var id = item.studentID;
+
+                            var editButton = '<button type="button" class="btn btn-primary" onclick="editStudent(\'' + item.studentID + '\')"><i class="bi bi-pencil-fill"></i></button>';
+                            var deleteButton = '<button type="button" class="btn btn-danger" onclick="deleteStudent(\'' + item.studentID + '\')"><i class="bi bi-trash"></i></button>';
+                            var allocatedButton = '<button type="button" class="btn btn-info">Allocated</button>';
+
+
+                            
+
+                            isStudentAllocated(id, function (isAllocated) {
+                                // console.log(isAllocated.isAllocated);
+                                // var editButton, deleteButton;
+                                if (!isAllocated.isAllocated) {
+                                    // editButton = '<button type="button" class="btn btn-primary" onclick="editSubject(\'' + id + '\')"><i class="bi bi-pencil-fill"></i></button> ';
+                                    // deleteButton = '<button type="button" class="btn btn-danger" onclick="deleteSubject(\'' + id + '\')"><i class="bi bi-trash"></i> </button> ';
+                                    allocatedButton = '';
+                                } else {
+                                    editButton = '';
+                                    deleteButton = '';
+
+                                }
+                                var row = '<tr>' +
+                                    '<td>' + item.studentRegNo + '</td>' +
+                                    '<td>' + item.firstName + '</td>' +
+                                    '<td>' + item.middleName + '</td>' +
+                                    '<td>' + item.lastName + '</td>' +
+                                    '<td>' + item.displayName + '</td>' +
+                                    '<td>' + emaillink + '</td>' +
+                                    '<td>' + item.gender + '</td>' +
+                                    '<td>' + formatDate(item.dob) + '</td>' +
+                                    '<td>' + item.address + '</td>' +
+                                    '<td>' + contactLink + '</td>' +
+                                    '<td>' + enableButton + '</td>' +
+                                    '<td>' +
+                                    editButton + deleteButton +allocatedButton+
+
+                                    '</td>' +
+                                    '</tr>';
+                                $('#tableBody').append(row);
+                            });
+                        });
+                        updatePagination(pageNumber, data.totalPages)
+
+                    }
+                    else {
+                        $('#tableBody').empty();
+                        console.log('No data found');
+                        $('#notFound').show();
+                    }
+
+
+                },
+                error: function (error) {
+                    console.log(error);
+                    Swal.fire('Error!', 'An error occurred while loading data.', 'error');
+                }
+            });
+        }
+
+        function isStudentAllocated(id, callback) {
+            $.ajax({
+                url: '/Student/IsAllocated',
+                data: { id: id },
+                success: function (response) {
+                    callback(response);
+                },
+                error: function (error) {
+                    console.log("Error checking allocation:", error);
+                    callback(false);
+                }
+            });
+        }
+
+        function addStudentSuccess(response) {
+            if (response.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: response.message,
+                    showCancelButton: false,
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        loadData(currentPage, pageSize);
+                        $('#addStudentForm').hide();
+                        $('#addStudentForm').find('input[type=text], input[type=number], input[type=date], select').val('');
+                        $('#studentDetails').show();
+                        $('#hidable_details').show();
+                        $('#heading').show();
+                        $('#searchResults').empty().hide();
+
+
+                    }
+                });
+            } else {
+                Swal.fire({ icon: 'warning', title: 'Alert!', text: response.message });
+            }
+        }
+
+        function addStudentFailure(error) {
+            console.log(error);
+            Swal.fire('Error!', 'An error occurred while adding the student.', 'error');
+        }
+
+        function editStudent(id) {
+            $.ajax({
+                url: '/Student/UpsertStudent/' + id,
+                type: 'GET',
+                success: function (data) {
+                    $('#addStudentForm').html(data);
+                    $('#studentDetails').hide();
+                    $('#hidable_details').hide();
+                    $('#addStudentForm').show();
+                    $('#searchResults').empty().hide();
+                    $('#heading').hide();
+                },
+                error: function (error) {
+                    console.log(error);
+                    Swal.fire('Error!', 'An error occurred while fetching student details.', 'error');
+                }
+
+            });
+
+        }
+
+        function deleteStudent(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Student/DeleteStudent/' + id,
+                        type: 'POST',
+                        success: function (response) {
+                            $('#searchResults').empty().hide();
+                            $('#studentDetails').show();
+                            if (response.success) {
+                                $('#tableBody tr:has(td:contains(' + id + '))').remove();
+                                loadData(currentPage, pageSize);
+                                Swal.fire('Deleted!', 'Record deleted successfully.', 'success');
+                            } else {
+                                Swal.fire('Allert!', response.message, 'warning');
+                            }
+                        },
+                        error: function (error) {
+                            console.log(error);
+                            Swal.fire('Error!', 'An error occurred while deleting the student.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        function backStudent() {
+            $('#addStudentForm').hide();
+            $('#addStudentForm').find('input[type=text], input[type=number], input[type=date],input[type=email], select').val('');
+            $('#studentDetails').show();
+            $('#hidable_details').show();
+            $('#heading').show();
+        }
+
+        function toggleEnable(id, enable, Name) {
+            var action = enable ? "enable" : "disable";
+            var confirmationMessage = "Are you sure you want to " + action + " the '" + Name + "' student?";
+            Swal.fire({
+                title: 'Confirm',
+                text: confirmationMessage,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes',
+                cancelButtonText: 'No'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Student/ToggleStudent',
+                        type: 'POST',
+                        data: { id: id, enable: enable },
+                        success: function (response) {
+                            if (response.success) {
+                                $('#searchResults').empty().hide();
+                                $('#studentDetails').show();
+                                currentPage === 1;
+                                loadData(currentPage, pageSize);
+                                Swal.fire('Success!', response.message, 'success');
+                            } else {
+                                Swal.fire('Alert!', response.message, 'warning');
+                            }
+                        },
+                        error: function (error) {
+                            console.log(error);
+                            Swal.fire('Error!', 'An error occurred while toggling student status.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        // function sortTable(column) {
+        //     var tableRows = $('#studentDetails tbody tr').get();
+        //     tableRows.sort(function (a, b) {
+        //         var valA = $(a).find('td').eq(column).text().toUpperCase();
+        //         var valB = $(b).find('td').eq(column).text().toUpperCase();
+        //         return valA.localeCompare(valB);
+        //     });
+        //     $('#tableBody').empty().append(tableRows);
+        // }
+
+
+
+        function updatePagination(currentPage, totalPage) {
+            if (currentPage === 1) {
+                $('#prevButton').addClass('disabled');
+            }
+
+            if (currentPage === totalPage) {
+                $('#nextButton').addClass('disabled');
+            }
+        }
+
+    </script>
+}

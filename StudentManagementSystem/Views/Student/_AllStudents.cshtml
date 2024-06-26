@@ -1,0 +1,48 @@
+﻿@model SMS.ViewModel.Student.StudentViewModel
+
+<div class="panel w-100" id="studentDetails">
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover w-100 table-striped">
+                <thead>
+                    <tr class="th_head">
+                        <th id="sorting">@Html.DisplayNameFor(model => model.Students.First().StudentRegNo)</th>
+                        <th id="sorting">@Html.DisplayNameFor(model => model.Students.First().FirstName)</th>
+                        <th id="sorting">@Html.DisplayNameFor(model => model.Students.First().MiddleName)</th>
+                        <th id="sorting">@Html.DisplayNameFor(model => model.Students.First().LastName)</th>
+                        <th id="sorting">@Html.DisplayNameFor(model => model.Students.First().DisplayName)</th>
+                        <th id="sorting">@Html.DisplayNameFor(model => model.Students.First().Email)</th>
+                        <th>@Html.DisplayNameFor(model => model.Students.First().Gender)</th>
+                        <th id="sorting">@Html.DisplayNameFor(model => model.Students.First().DOB)</th>
+                        <th id="sorting">@Html.DisplayNameFor(model => model.Students.First().Address)</th>
+                        <th id="sorting">@Html.DisplayNameFor(model => model.Students.First().ContactNo)</th>
+                        <th>@Html.DisplayNameFor(model => model.Students.First().IsEnable)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+            <div class="alert alert-warning" id="notFound" role="alert">
+                No data found.
+            </div>
+            <div class="container-fluid">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination pagination-container">
+                        <li class="page-item mr-auto" id="prevButton">
+                            <a class="page-link" href="#" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                                <span class="sr-only">Previous</span>
+                            </a>
+                        </li>
+                        <li class="page-item ml-auto" id="nextButton">
+                            <a class="page-link" href="#" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                                <span class="sr-only">Next</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>

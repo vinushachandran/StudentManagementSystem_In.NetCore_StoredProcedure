@@ -1,0 +1,206 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    font-size: 15px;
+}
+
+.container.body-content {
+    flex: 1;
+}
+
+footer {
+    background-color: #9F2B68;
+    text-align: center;
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin-bottom: 0;
+    color: #E6E6FA;
+}
+
+.navbar.comHeader {
+    background-color: #9F2B68;
+    color: white;
+    font-size: 20px;
+}
+
+.comHeader .container .nav_div ul li .nav-link {
+    color: white;
+    padding-left: 30px;
+}
+
+    .comHeader .container .nav_div ul li .nav-link:hover {
+        color: #E6E6FA;
+        transform: scale(1.1);
+        cursor: pointer;
+    }
+
+
+
+
+ul.nav.nav-tabs {
+    margin: 10px 0px;
+}
+
+.navigation {
+    color: white;
+}
+
+#topHeader {
+    background-color: #E6E6FA;
+    padding-left: 30px;
+    padding-top: 10px;
+    font-size: 25px;
+    font-weight: 500;
+    padding-bottom: 0;
+    height: 7vh;
+}
+
+.adding-form {
+    width: 20vw;
+    box-shadow: 0 0 7px #9F2B68;
+    padding: 50px;
+    border-radius: 20px;
+    margin-top: 100px;
+    margin-left: 600px;
+    margin-right: 600px;
+}
+
+.field {
+    padding-left: 500px;
+}
+
+
+.search-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+#searchCriteria {
+    margin-right: 5px;
+    width: 10vw;
+    background-color: #E6E6FA;
+}
+
+.th_head {
+    background-color: #E6E6FA;
+}
+
+#filterCriteria {
+    background-color: #E6E6FA;
+}
+
+.pagination-container {
+    left: 0;
+    width: 100%;
+    padding: 10px 0;
+}
+
+#addNew {
+    background-color: #9F2B68;
+}
+
+#first-tab, #second-tab {
+    color: black;
+    box-shadow: 0 0 4px #9F2B68;
+}
+
+    #first-tab.active, #second-tab.active {
+        background-color: #E6E6FA;
+    }
+
+.full-body {
+    /*border: solid 0.3px black;*/
+    padding: 30px;
+    margin-top: 0;
+    margin: 30px;
+    box-shadow: 0 0 4px #9F2B68;
+    border-radius: 10px;
+    width:100%;
+}
+
+.main-heading {
+    border-bottom: solid 1px #9F2B68;
+    margin-bottom: 15px;
+}
+
+.myTabs {
+    margin: 30px;
+}
+
+
+
+
+
+
+
+.no-border {
+    border: none !important;
+}
+
+.studentAllocationTable th, .studentAllocationTable td {
+    /*border: 1px solid #9F2B68;*/
+    width: 33.33%;
+    text-align: center;
+}
+
+.Teacher-grp {
+    vertical-align: middle !important;
+}
+
+.studentAllocationcardHeader {
+    /*background-color: #f0e6fa;*/
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #E6E6FA;
+}
+
+.card-body {
+    background-color: #fcfafe;
+    border-color: #9F2B68;
+    padding: 30px;
+}
+
+.delete-allocation {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.subject-card {
+}
+
+
+.studentAllocationInsideTable th, .studentAllocationInsideTable td {
+    border: 1px solid #dee2e6;
+    width: 33.33%;
+    text-align: center;
+}
+
+.StudentAllocationTeacherColumn {
+    vertical-align: middle !important;
+}
+
+.studentAllocationcardHeader {
+    background-color: #f0e6fa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.studentAllocationcardCard {
+    background-color: #fcfafe;
+    border-color: #9F2B68;
+}
+
+.delete-allocation {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
