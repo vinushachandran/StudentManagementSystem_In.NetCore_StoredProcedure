@@ -127,7 +127,7 @@
 
                 if (query.trim() !== '') {
                     $.ajax({
-                        url: '/Student/Search',
+                        url: '/Student/SearchStudent',
                         type: 'GET',
                         data: { query: query, criteria: criteria },
                         success: function (response) {
@@ -151,7 +151,7 @@
 
         function loadData(pageNumber, pageSize) {
             function formatDate(dateString) {
-                if (!dateString) return ''; // Handle case where dateString is undefined or null
+                if (!dateString) return ''; 
 
                 var timestamp = parseInt(dateString.replace("/Date(", "").replace(")/", ""));
                 var date = new Date(timestamp);
@@ -183,12 +183,9 @@
                             
 
                             isStudentAllocated(id, function (isAllocated) {
-                                // console.log(isAllocated.isAllocated);
-                                // var editButton, deleteButton;
+                        
                                 if (!isAllocated.isAllocated) {
-                                    // editButton = '<button type="button" class="btn btn-primary" onclick="editSubject(\'' + id + '\')"><i class="bi bi-pencil-fill"></i></button> ';
-                                    // deleteButton = '<button type="button" class="btn btn-danger" onclick="deleteSubject(\'' + id + '\')"><i class="bi bi-trash"></i> </button> ';
-                                    allocatedButton = '';
+                                   allocatedButton = '';
                                 } else {
                                     editButton = '';
                                     deleteButton = '';
@@ -376,15 +373,15 @@
             });
         }
 
-        // function sortTable(column) {
-        //     var tableRows = $('#studentDetails tbody tr').get();
-        //     tableRows.sort(function (a, b) {
-        //         var valA = $(a).find('td').eq(column).text().toUpperCase();
-        //         var valB = $(b).find('td').eq(column).text().toUpperCase();
-        //         return valA.localeCompare(valB);
-        //     });
-        //     $('#tableBody').empty().append(tableRows);
-        // }
+        function sortTable(column) {
+            var tableRows = $('#studentDetails tbody tr').get();
+            tableRows.sort(function (a, b) {
+                var valA = $(a).find('td').eq(column).text().toUpperCase();
+                var valB = $(b).find('td').eq(column).text().toUpperCase();
+                return valA.localeCompare(valB);
+            });
+            $('#tableBody').empty().append(tableRows);
+        }
 
 
 

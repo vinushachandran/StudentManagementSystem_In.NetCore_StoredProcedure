@@ -46,15 +46,21 @@
                         <td>
                             <button type="button" class="btn btn-primary" id="editBtn_@student.StudentID" onclick="editStudent('@student.StudentID')"><i class="bi bi-pencil-fill"></i></button>
                             <button type="button" class="btn btn-danger" id="deleteBtn_@student.StudentID" onclick="deleteStudent('@student.StudentID')"><i class="bi bi-trash"></i></button>
+                            <button type="button" class="btn btn-info" id="allocationBtn_@student.StudentID">Allocated</button>
+
 
                             <script>
                                 $.ajax({
                                     url: '/Student/IsAllocated',
                                     data: { id: '@student.StudentID' },
                                     success: function (response) {
-                                        if (response) {
+                                        if (response.isAllocated) {
                                             $('#editBtn_@student.StudentID,#deleteBtn_@student.StudentID').hide();
 
+
+                                        }
+                                        else {
+                                            $('#allocationBtn_@student.StudentID').hide();
                                         }
 
                                     },

@@ -172,7 +172,7 @@ namespace StudentManagementSystem.Controllers
         /// <param name="criteria"></param>
         /// <returns></returns>
         [HttpGet]
-        public ActionResult Search(string query, string criteria)
+        public ActionResult SearchStudent(string query, string criteria)
         {
 
             var searchResults = _studentRepository.GetSearchStudents(query, criteria).ToList();
