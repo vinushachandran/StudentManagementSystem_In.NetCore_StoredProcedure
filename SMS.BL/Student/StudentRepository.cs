@@ -5,6 +5,7 @@ using SMS.BL.Student.Interface;
 using SMS.Data;
 using SMS.Model.Student;
 using SMS.ViewModel.RepositoyResponse;
+using SMS.ViewModel.StaticData;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -52,7 +53,7 @@ namespace SMS.BL.Student
 			else
 			{
 				response.Success = false;
-				response.Message.Add(string.Format("Data not Found"));
+				response.Message.Add(string.Format(StaticData.NO_DATA_FOUND,"Student"));
 			}
 
 
@@ -76,7 +77,8 @@ namespace SMS.BL.Student
 
 			if (student == null)
 			{
-				throw new KeyNotFoundException($"Student with ID {id} not found.");
+				response.Success=false;
+				response.Message.Add(string.Format(StaticData.NO_DATA_FOUND,$"{id} data "));
 			}
 			return response;
 		}
@@ -123,10 +125,10 @@ namespace SMS.BL.Student
 
 				return responce;
 			}
-			catch (Exception ex)
+			catch
 			{
 				responce.Success = false;
-				responce.Message.Add("An error occurred while deleting the student: " + ex.Message);
+				responce.Message.Add(string.Format(StaticData.SOMETHING_WENT_WRONG));
 				return responce;
 			}
 		}
@@ -186,9 +188,9 @@ namespace SMS.BL.Student
 
                 return response;
             }
-			catch (Exception ex)
+			catch 
 			{
-				response.Message.Add("An error occurred while saving the student: " + ex.Message);
+				response.Message.Add(string.Format(StaticData.SOMETHING_WENT_WRONG));
 				response.Success = false;
 				return response;
 			}
@@ -239,10 +241,10 @@ namespace SMS.BL.Student
 
                 return response;
 			}
-			catch (Exception ex)
+			catch
 			{
 				response.Success=false;
-				response.Message.Add("An error occurred while toggling the student's enable status: " + ex.Message);
+				response.Message.Add(string.Format(StaticData.SOMETHING_WENT_WRONG));
 				return response;
 			}
 		}
@@ -276,7 +278,7 @@ namespace SMS.BL.Student
 			catch
 			{
                 response.Success = false;
-                response.Message.Add("An error occurred while checking student allocation: ");
+                response.Message.Add(string.Format(StaticData.SOMETHING_WENT_WRONG));
                 return response;
 
             }
@@ -317,7 +319,7 @@ namespace SMS.BL.Student
                 else
                 {
                     response.Success = false;
-                    response.Message.Add("No students found matching the search criteria.");
+                    response.Message.Add(string.Format(StaticData.NO_DATA_FOUND,"student"));
                 }
 
                 return response;
@@ -325,7 +327,7 @@ namespace SMS.BL.Student
             catch
             {
                 response.Success = false;
-                response.Message.Add("An error occurred while searching for students: ");
+                response.Message.Add(string.Format(StaticData.SOMETHING_WENT_WRONG));
                 return response;
             }
         }
@@ -359,7 +361,7 @@ namespace SMS.BL.Student
 			catch
 			{
                 response.Success = false;
-                response.Message.Add("An error occurred while checking student registration number: ");
+                response.Message.Add(string.Format(StaticData.SOMETHING_WENT_WRONG));
                 return response;
             }
         }
@@ -391,7 +393,7 @@ namespace SMS.BL.Student
             catch
             {
                 response.Success = false;
-                response.Message.Add("An error occurred while checking student display name ");
+                response.Message.Add(string.Format(StaticData.SOMETHING_WENT_WRONG));
                 return response;
             }
         }
@@ -426,7 +428,7 @@ namespace SMS.BL.Student
 			catch
 			{
                 response.Success = false;
-                response.Message.Add("An error occurred while checking student email ");
+                response.Message.Add(string.Format(StaticData.SOMETHING_WENT_WRONG));
                 return response;
             }
 		}

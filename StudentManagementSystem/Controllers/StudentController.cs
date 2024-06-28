@@ -8,6 +8,8 @@ using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using SMS.BL.Student.Interface;
 using SMS.Model.Student;
+using SMS.ViewModel.ErrorResponse;
+using SMS.ViewModel.StaticData;
 using SMS.ViewModel.Student;
 
 
@@ -16,6 +18,8 @@ namespace StudentManagementSystem.Controllers
     public class StudentController : Controller
     {
 		IStudentRepository _studentRepository;
+
+        ErrorResponse errorResponse=new ErrorResponse();
 		
         public StudentController(IStudentRepository studentRepository)
         {
@@ -29,7 +33,7 @@ namespace StudentManagementSystem.Controllers
         }
 
         // GET: Student/Details/5
-        public Task<IActionResult> DisplayAllStudents(int pageNumber, int pageSize, bool? isActive = null)
+        public IActionResult DisplayAllStudents(int pageNumber, int pageSize, bool? isActive = null)
         {
             int totalPage;
             try
@@ -41,17 +45,18 @@ namespace StudentManagementSystem.Controllers
 
                 if (pageData.Count > 0)
                 {
-                    return Task.FromResult<IActionResult>(Json(new { success = true, data = pageData, totalPages = totalPage }));
+                    return (Json(new { success = true, data = pageData, totalPages = totalPage }));
                 }
                 else
                 {
-                    return Task.FromResult<IActionResult>(Json(new { success = false, message = "No Data Found", totalPages = totalPage }));
+                    errorResponse.Messages.Add(string.Format(response.Message.ToString()));
+                    return new JsonResult(errorResponse);
                 }
 
             }
             catch (Exception ex)
             {
-                return Task.FromResult<IActionResult>(Json(new { success = false, message = "Error retrieving student data", error = ex.Message }));
+                return (Json(new { success = false, message = "Error retrieving student data", error = ex.Message }));
             }
 
         }
@@ -71,9 +76,10 @@ namespace StudentManagementSystem.Controllers
 
 				return Json(new { success = response.Success, message = response.Message});
 			}
-			catch (Exception ex)
+			catch
 			{
-				return Json(new { success = false, message = ex.Message });
+                
+				return Json(new { success = errorResponse.Success, message = StaticData.SOMETHING_WENT_WRONG });
 			}
 		}
 
@@ -112,10 +118,10 @@ namespace StudentManagementSystem.Controllers
 
 					return Json(new { success = response.Success, message = string.Join(", ", response.Message) });
 				}
-				catch (Exception ex)
+				catch 
 				{
-					return Json(new { success = false, message = "Error occurred while adding the student: " + ex.Message });
-				}
+                    return Json(new { success = errorResponse.Success, message = StaticData.SOMETHING_WENT_WRONG });
+                }
 			}
 			else
 			{
@@ -142,9 +148,9 @@ namespace StudentManagementSystem.Controllers
 
                 return Json(new { success = response.Success, message = response.Message });
             }
-            catch (Exception ex)
+            catch
             {
-                return Json(new { success = false, message = "An error occurred: " + ex.Message });
+                return Json(new { success = errorResponse.Success, message = StaticData.SOMETHING_WENT_WRONG });
             }
         }
 
@@ -195,7 +201,7 @@ namespace StudentManagementSystem.Controllers
             }
             catch
             {
-                return PartialView("_SearchResults", null);
+                return Json(new { success = errorResponse.Success, message = StaticData.SOMETHING_WENT_WRONG });
             }
 
             
