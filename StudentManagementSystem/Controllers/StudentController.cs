@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using SMS.BL.Student.Interface;
 using SMS.Model.Student;
@@ -33,14 +34,10 @@ namespace StudentManagementSystem.Controllers
             int totalPage;
             try
             {
-                var students = _studentRepository.GetAllStudents(pageNumber, pageSize, isActive, out totalPage);
+                var response = _studentRepository.GetAllStudents(pageNumber, pageSize, isActive, out totalPage);
 
-                var pageData = students.ToList();
+                var pageData = response.Data.ToList();
 
-                var viewModel = new StudentViewModel
-                {
-                    Students = students
-                };
 
                 if (pageData.Count > 0)
                 {
@@ -68,13 +65,11 @@ namespace StudentManagementSystem.Controllers
 		/// <returns></returns>
 		public ActionResult DeleteStudent(int id)
 		{
-			var msg = "";
-
 			try
 			{
-				bool isDelete = _studentRepository.DeleteStudent(id, out msg);
+				var response = _studentRepository.DeleteStudent(id);
 
-				return Json(new { success = isDelete, message = msg });
+				return Json(new { success = response.Success, message = response.Message});
 			}
 			catch (Exception ex)
 			{
@@ -108,14 +103,14 @@ namespace StudentManagementSystem.Controllers
 		[ValidateAntiForgeryToken]
 		public ActionResult UpsertStudent(StudentBO student)
 		{
-			var msg = "";
 			if (ModelState.IsValid)
 			{
 				try
 				{
-					bool isSaveSuccess = _studentRepository.SaveStudent(student, out msg);
 
-					return Json(new { success = isSaveSuccess, message = msg });
+                    var response = _studentRepository.SaveStudent(student);
+
+					return Json(new { success = response.Success, message = string.Join(", ", response.Message) });
 				}
 				catch (Exception ex)
 				{
@@ -143,9 +138,9 @@ namespace StudentManagementSystem.Controllers
         {
             try
             {
-                bool isToggle = _studentRepository.ToggleEnable(id, enable, out string msg);
+                var response = _studentRepository.ToggleEnable(id, enable);
 
-                return Json(new { success = isToggle, message = msg });
+                return Json(new { success = response.Success, message = response.Message });
             }
             catch (Exception ex)
             {
@@ -160,8 +155,17 @@ namespace StudentManagementSystem.Controllers
         /// <returns></returns>
         public JsonResult IsAllocated(long id)
         {
-            bool isAllocated = _studentRepository.CheckStudentInUse(id);
-            return Json(new { isAllocated = isAllocated });
+
+            var response = _studentRepository.CheckStudentInUse(id);
+
+            if (response.Success)
+            {
+                return Json(new { success = true, isAllocated = response.Data });
+            }
+            else
+            {
+                return Json(new { success = false, message = string.Join(", ", response.Message) });
+            }
         }
 
 
@@ -174,18 +178,87 @@ namespace StudentManagementSystem.Controllers
         [HttpGet]
         public ActionResult SearchStudent(string query, string criteria)
         {
-
-            var searchResults = _studentRepository.GetSearchStudents(query, criteria).ToList();
-
-
-            if (searchResults.Count > 0)
+            try
             {
-                return PartialView("_SearchResults", searchResults);
+                var response = _studentRepository.GetSearchStudents(query, criteria);
+
+
+                if (response.Success && response.Data.Any())
+                {
+                    return PartialView("_SearchResults", response.Data.ToList());
+                }
+                else
+                {
+                    return PartialView("_SearchResults", null);
+                }
+
             }
-            else
+            catch
             {
                 return PartialView("_SearchResults", null);
             }
+
+            
         }
+
+        /// <summary>
+        /// To check the student registration number already exist or not
+        /// </summary>
+        /// <param name="regNo"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public JsonResult IsStudentRegAvailable(string regNo,long stdID)
+        {
+            var response = _studentRepository.CheckStudentRegNo(regNo, stdID);
+
+            if (response.Success)
+            {
+                return Json(new { isAvailable = response.Data });
+            }
+            else
+            {
+                return Json(new { success = false, message = string.Join(", ", response.Message) });
+            }
+        }
+
+
+        /// <summary>
+        /// To check this student displayname already available or not
+        /// </summary>
+        /// <param name="studentName"></param>
+        /// <returns></returns>
+
+        public JsonResult IsStudentNameAvailable(string studentName, long stdID)
+        {
+            var response = _studentRepository.CheckStudentName(studentName, stdID);
+            if (response.Success)
+            {
+                return Json(new { isAvailable = response.Data });
+            }
+            else
+            {
+                return Json(new { success = false, message = string.Join(", ", response.Message) });
+            }
+        }
+
+        /// <summary>
+        /// To check one email address already exist or not
+        /// </summary>
+        /// <param name="teacherEmail"></param>
+        /// <returns></returns>
+        public JsonResult IsStudentEmailAvailable(string studentEmail, long stdID)
+        {
+            var response = _studentRepository.CheckStudentEmail(studentEmail, stdID);
+            if (response.Success)
+            {
+                return Json(new { isAvailable = response.Data });
+            }
+            else
+            {
+                return Json(new { success = false, message = string.Join(", ", response.Message) });
+            }
+        }
+
+
     }
 }

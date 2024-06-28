@@ -179,12 +179,19 @@
     //Check Registration Number already exists
     $('#StudentRegNo').change(function () {
         var regNo = $(this).val();
+        var stdID = $('#StudentID').val();
         $.ajax({
             url: '/Student/IsStudentRegAvailable',
             type: 'GET',
-            data: { regNo: regNo },
+            data: { regNo: regNo, stdID: stdID },
             success: function (response) {
-                $('#StudentRegNo-error').text(response ? '' : 'Student registration number already exists.');
+                if (response.isAvailable) {
+                    $('#StudentRegNo-error').text('Student registration number already exists.');
+                }
+                else {
+                    $('#StudentRegNo-error').text('');
+
+                }
             }
         });
     });
@@ -192,12 +199,19 @@
     //Check Display Name already exists
     $('#DisplayName').change(function () {
         var studentName = $(this).val();
+        var stdID = $('#StudentID').val();
         $.ajax({
             url: '/Student/IsStudentNameAvailable',
             type: 'GET',
-            data: { studentName: studentName },
+            data: { studentName: studentName, stdID: stdID },
             success: function (response) {
-                $('#DisplayName-error').text(response ? '' : 'Display name already exists.');
+                if (response.isAvailable) {
+                    $('#DisplayName-error').text('Student display name already exists.');
+                }
+                else{
+                    $('#DisplayName-error').text('');
+
+                }
             }
         });
     });
@@ -205,12 +219,19 @@
     //Check email  already exist
     $('#StudentEmail').change(function () {
         var studentEmail = $(this).val();
+        var stdID = $('#StudentID').val();
         $.ajax({
             url: '/Student/IsStudentEmailAvailable',
             type: 'GET',
-            data: { studentEmail: studentEmail },
+            data: { studentEmail: studentEmail, stdID: stdID },
             success: function (response) {
-                $('#StudentEmail-error').text(response ? '' : 'Teacher Email already exists.');
+                if (response.isAvailable) {
+                    $('#StudentEmail-error').text('Student Email already exists.');
+                }
+                else {
+                    $('#StudentEmail-error').text('');
+
+                }
             }
         });
     });

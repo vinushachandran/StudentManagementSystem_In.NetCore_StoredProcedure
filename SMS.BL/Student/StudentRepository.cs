@@ -1,8 +1,10 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using Azure;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using SMS.BL.Student.Interface;
 using SMS.Data;
 using SMS.Model.Student;
+using SMS.ViewModel.RepositoyResponse;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -25,8 +27,9 @@ namespace SMS.BL.Student
 		/// Get all the student details
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<StudentBO> GetAllStudents(int pageNo, int pageSize, bool? isEnable, out int totalPage)
+		public RepositoryResponse<IEnumerable<StudentBO>> GetAllStudents(int pageNo, int pageSize, bool? isEnable, out int totalPage)
 		{	
+			var response=new RepositoryResponse<IEnumerable<StudentBO>>();
 
             var pageNoParam = new SqlParameter("@PageNo", pageNo);
             var pageSizeParam = new SqlParameter("@PageSize", pageSize);
@@ -41,9 +44,21 @@ namespace SMS.BL.Student
 
             var pageData = _dataContext.Students.FromSqlRaw("EXEC sp_GetAllStudentDetails @PageNo, @PageSize, @IsEnable, @TotalPage OUT", pageNoParam, pageSizeParam, isEnableParam, totalPageParam).ToList();
 
+			if(pageData.Count > 0 )
+			{
+				response.Data = pageData;
+
+			}
+			else
+			{
+				response.Success = false;
+				response.Message.Add(string.Format("Data not Found"));
+			}
+
+
             totalPage = (int)totalPageParam.Value;
 
-            return pageData;
+            return response;
         }
 
 		/// <summary>
@@ -52,8 +67,10 @@ namespace SMS.BL.Student
 		/// <param name="id"></param>
 		/// <returns></returns>
 		/// <exception cref="KeyNotFoundException"></exception>
-		public StudentBO GetOneStudent(long id)
+		public RepositoryResponse<StudentBO> GetOneStudent(long id)
 		{
+			var response= new RepositoryResponse<StudentBO>();
+
 			var studentIdParam = new SqlParameter("@StudentID", id);
 			var student = _dataContext.Students.FromSqlRaw("EXEC GetOneStudentDetails @StudentID",studentIdParam).AsEnumerable().FirstOrDefault();
 
@@ -61,7 +78,7 @@ namespace SMS.BL.Student
 			{
 				throw new KeyNotFoundException($"Student with ID {id} not found.");
 			}
-			return student;
+			return response;
 		}
 
 		/// <summary>
@@ -70,14 +87,15 @@ namespace SMS.BL.Student
 		/// <param name="id"></param>
 		/// <param name="msg"></param>
 		/// <returns></returns>
-		public bool DeleteStudent(long id, out string msg)
+		public RepositoryResponse<bool> DeleteStudent(long id)
 		{
-			msg = "";
+			var responce= new RepositoryResponse<bool>();
 
 			if (id <= 0)
 			{
-				msg = "Invalid student ID.";
-				return false;
+				responce.Success = false;
+				responce.Message.Add("Invalid student ID.");
+				return responce;
 			}
 
 			try
@@ -99,15 +117,17 @@ namespace SMS.BL.Student
 
 				_dataContext.Database.ExecuteSqlRaw("EXEC sp_DeleteStudent @StudentID, @IsDeleted OUTPUT, @ErrorMessage OUTPUT", studentIdParam, isDeletedParam, errorMessageParam);
 
-				bool isDeleted = (bool)isDeletedParam.Value;
-				msg = errorMessageParam.Value as string ?? string.Empty; 
+				responce.Data=(bool)isDeletedParam.Value;
+				responce.Message.Add (errorMessageParam.Value as string ?? string.Empty);
+				
 
-				return isDeleted;
+				return responce;
 			}
 			catch (Exception ex)
 			{
-				msg = "An error occurred while deleting the student: " + ex.Message;
-				return false;
+				responce.Success = false;
+				responce.Message.Add("An error occurred while deleting the student: " + ex.Message);
+				return responce;
 			}
 		}
 
@@ -117,9 +137,9 @@ namespace SMS.BL.Student
 		/// <param name="student"></param>
 		/// <param name="msg"></param>
 		/// <returns></returns>
-		public bool SaveStudent(StudentBO student, out string msg)
+		public RepositoryResponse<bool> SaveStudent(StudentBO student)
 		{
-			msg = "";
+			var response=new RepositoryResponse<bool>();
 
 			try
 			{
@@ -156,14 +176,21 @@ namespace SMS.BL.Student
 
 				_dataContext.Database.ExecuteSqlRaw("EXEC sp_SaveStudent @StudentID, @StudentRegNo, @FirstName, @MiddleName, @LastName, @DisplayName, @Email, @Gender, @DOB, @Address, @ContactNo, @IsEnable, @ErrorMessage OUTPUT, @Success OUTPUT", parameters);
 
-				msg = parameters.First(p => p.ParameterName == "@ErrorMessage").Value as string ?? string.Empty;
+				response.Data = (bool)successParam.Value;
+				response.Message.Add(parameters.First(p => p.ParameterName == "@ErrorMessage").Value as string ?? string.Empty);
+			
+                if (!(bool)successParam.Value)
+                {
+                    response.Success = false;
+                }
 
-				return (bool)successParam.Value;
-			}
+                return response;
+            }
 			catch (Exception ex)
 			{
-				msg = "An error occurred while saving the student: " + ex.Message;
-				return false;
+				response.Message.Add("An error occurred while saving the student: " + ex.Message);
+				response.Success = false;
+				return response;
 			}
 		}
 
@@ -175,8 +202,9 @@ namespace SMS.BL.Student
 		/// <param name="isEnable"></param>
 		/// <param name="msg"></param>
 		/// <returns></returns>
-		public bool ToggleEnable(long id, bool isEnable, out string msg)
+		public RepositoryResponse<bool> ToggleEnable(long id, bool isEnable)
 		{
+			var response = new RepositoryResponse<bool>();
 			try
 			{
 				var successParam = new SqlParameter
@@ -201,38 +229,59 @@ namespace SMS.BL.Student
 
 				_dataContext.Database.ExecuteSqlRaw("EXEC sp_ToggleEnableStudent @StudentID, @IsEnable, @ErrorMessage OUTPUT, @Success OUTPUT", parameters);
 
-				msg = parameters.First(p => p.ParameterName == "@ErrorMessage").Value as string ?? string.Empty;
+				response.Data=(bool)successParam.Value;
+				response.Message.Add(parameters.First(p => p.ParameterName == "@ErrorMessage").Value as string ?? string.Empty);
 
-				return (bool)successParam.Value;
+                if (!(bool)successParam.Value)
+                {
+                    response.Success = false;
+                }
+
+                return response;
 			}
 			catch (Exception ex)
 			{
-				msg = "An error occurred while toggling the student's enable status: " + ex.Message;
-				return false;
+				response.Success=false;
+				response.Message.Add("An error occurred while toggling the student's enable status: " + ex.Message);
+				return response;
 			}
 		}
 
 
 
         ///<summary>
-        /// To check this teacher allready in the database
+        /// To check this student  allready allocated for a subject
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public bool CheckStudentInUse(long id)
+        public RepositoryResponse<bool> CheckStudentInUse(long id)
         {
-            var StdID = new SqlParameter("@StdID", id);
-            var result = new SqlParameter
-            {
-                ParameterName = "@Result",
-                SqlDbType = SqlDbType.Bit,
-                Direction = ParameterDirection.Output
-            };
+			var response = new RepositoryResponse<bool>();
+			try
+			{
+                var StdID = new SqlParameter("@StdID", id);
+                var result = new SqlParameter
+                {
+                    ParameterName = "@Result",
+                    SqlDbType = SqlDbType.Bit,
+                    Direction = ParameterDirection.Output
+                };
 
 
-            _dataContext.Database.ExecuteSqlRaw("SELECT @Result = dbo.fn_CheckStudentAllocation(@StdID)", StdID, result);
+                _dataContext.Database.ExecuteSqlRaw("SELECT @Result = dbo.fn_CheckStudentAllocation(@StdID)", StdID, result);
 
-            return (bool)result.Value;
+				response.Data=(bool)result.Value;
+                return response;
+            }
+			catch
+			{
+                response.Success = false;
+                response.Message.Add("An error occurred while checking student allocation: ");
+                return response;
+
+            }
+			
+            
 
         }
 
@@ -243,8 +292,9 @@ namespace SMS.BL.Student
         /// <param name="item"></param>
         /// <param name="criteria"></param>
         /// <returns></returns>
-        public IEnumerable<StudentBO> GetSearchStudents(string item, string criteria)
+        public RepositoryResponse<IEnumerable<StudentBO>> GetSearchStudents(string item, string criteria)
         {
+			var response= new RepositoryResponse<IEnumerable<StudentBO>>();
             try
             {
 
@@ -260,15 +310,128 @@ namespace SMS.BL.Student
                                          .FromSqlRaw(sqlQuery, searchCriteria, searchItem)
                                          .ToList();
 
-                return students;
+                if (students.Count > 0)
+                {
+                    response.Data = students;
+                }
+                else
+                {
+                    response.Success = false;
+                    response.Message.Add("No students found matching the search criteria.");
+                }
+
+                return response;
             }
             catch
             {
-                return Enumerable.Empty<StudentBO>();
+                response.Success = false;
+                response.Message.Add("An error occurred while searching for students: ");
+                return response;
             }
         }
 
 
 
-    }
+        /// <summary>
+        /// Check this students reg number already exist
+        /// </summary>
+        /// <param name="studentRegNumber"></param>
+        /// <param name="studentId"></param>
+        /// <returns></returns>
+        public RepositoryResponse<bool> CheckStudentRegNo(string studentRegNumber, long studentId)
+        {
+			var response=new RepositoryResponse<bool>();
+			try
+			{
+				var studentRegNo = new SqlParameter("@StudentRegNo", studentRegNumber);
+				var studentID = new SqlParameter("@StudentID", studentId);
+                var result = new SqlParameter
+                {
+                    ParameterName = "@Result",
+                    SqlDbType = SqlDbType.Bit,
+                    Direction = ParameterDirection.Output
+                };
+
+				_dataContext.Database.ExecuteSqlRaw("SELECT @Result = dbo.fn_CheckStudentRegNo(@StudentID,@StudentRegNo)", studentID, studentRegNo, result);
+				response.Data = (bool)result.Value;
+				return response;
+            }
+			catch
+			{
+                response.Success = false;
+                response.Message.Add("An error occurred while checking student registration number: ");
+                return response;
+            }
+        }
+
+        /// <summary>
+        /// Check this students Display name already exist
+        /// </summary>
+        /// <param name="studentname"></param>
+        /// <param name="studentId"></param>
+        /// <returns></returns>
+        public RepositoryResponse<bool> CheckStudentName(string studentname, long studentId)
+        {
+			var response=new RepositoryResponse<bool>();
+            try
+            {
+                var studentName = new SqlParameter("@DisplayName", studentname);
+                var studentID = new SqlParameter("@StudentID", studentId);
+                var result = new SqlParameter
+                {
+                    ParameterName = "@Result",
+                    SqlDbType = SqlDbType.Bit,
+                    Direction = ParameterDirection.Output
+                };
+
+                _dataContext.Database.ExecuteSqlRaw("SELECT @Result = dbo.fn_CheckStudentName(@StudentID,@DisplayName)", studentID, studentName,  result);
+                response.Data = (bool)result.Value;
+                return response;
+            }
+            catch
+            {
+                response.Success = false;
+                response.Message.Add("An error occurred while checking student display name ");
+                return response;
+            }
+        }
+
+
+        /// <summary>
+		/// Check this students email name already exist
+		/// </summary>
+		/// <param name="studentEmail"></param>
+		/// <param name="studentId"></param>
+		/// <returns></returns>
+        public RepositoryResponse<bool> CheckStudentEmail(string studentEmail, long studentId)
+		{
+			var response=new RepositoryResponse<bool>();
+			try
+			{
+				var email = new SqlParameter("@Email", studentEmail);
+				var studentID = new SqlParameter("@StudentID", studentId);
+				var result = new SqlParameter
+				{
+					ParameterName = "@Result",
+					SqlDbType = SqlDbType.Bit,
+					Direction = ParameterDirection.Output
+				};
+
+
+				_dataContext.Database.ExecuteSqlRaw("SELECT @Result = dbo.fn_CheckStudentEmail(@StudentID,@Email)", studentID, email,  result);
+
+                response.Data = (bool)result.Value;
+                return response;
+            }
+			catch
+			{
+                response.Success = false;
+                response.Message.Add("An error occurred while checking student email ");
+                return response;
+            }
+		}
+
+
+
+	}
 }
