@@ -319,15 +319,7 @@ namespace SMS.BL.Student
                                          .FromSqlRaw(sqlQuery, searchCriteria, searchItem)
                                          .ToList();
 
-                if (students.Count > 0)
-                {
-                    response.Data = students;
-                }
-                else
-                {
-                    response.Success = false;
-                    response.Message.Add(string.Format(StaticData.NO_DATA_FOUND,"student"));
-                }
+                response.Data = students;
 
                 return response;
             }

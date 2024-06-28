@@ -102,6 +102,9 @@
                 loadData(currentPage, pageSize);
             });
 
+            $('#searchQuery').on('input',function () {
+                loadData(currentPage, pageSize);
+            });
 
             $('#nextButton').click(function () {
                 currentPage++;
@@ -121,35 +124,10 @@
             });
 
 
-            $('#searchQuery').on('input', function () {
-                var query = $(this).val();
-                var criteria = $('#searchCriteria').val();
-
-                if (query.trim() !== '') {
-                    $.ajax({
-                        url: '/Student/SearchStudent',
-                        type: 'GET',
-                        data: { query: query, criteria: criteria },
-                        success: function (response) {
-                            $('#studentDetails').hide();
-                            $('#searchResults').html(response).show();
-
-                        },
-                        error: function (error) {
-                            console.log(error);
-                            Swal.fire('Error!', 'An error occurred while searching.', 'error');
-                        }
-                    });
-                } else {
-                    $('#studentDetails').show();
-                    $('#searchResults').empty().hide();
-
-                }
-            });
-
         });
 
-        function loadData(pageNumber, pageSize) {
+        async function loadData(pageNumber, pageSize) {
+            var data;
             function formatDate(dateString) {
                 if (!dateString) return ''; 
 
@@ -159,89 +137,86 @@
                 return formattedDate;
             }
             var filterCriteria = $('#filterCriteria').val();
-            $.ajax({
-                url: '/Student/DisplayAllStudents',
-                type: 'GET',
-                data: { pageNumber: currentPage, pageSize: pageSize, isActive: filterCriteria },
-                success: function (data) {
-                    if (data.success) {
-                        $('#tableBody').empty();
-                        $('#notFound').hide();
-                        $.each(data.data, function (index, item) {
-                            var editUrl = '/Student/UpsertStudent/' + item.studentID;
-                            var deleteUrl = '/Student/DeleteStudent/' + item.studentID;
-                            var enableButton = item.isEnable ? '<button type="button" class="btn btn-success" onclick="toggleEnable(\'' + item.studentID + '\', false,\'' + item.displayName + '\')"><i class="bi bi-toggle-on"></i></button>' : '<button type="button" class="btn btn-danger" onclick="toggleEnable(\'' + item.studentID + '\', true,\'' + item.displayName + '\')"><i class="bi bi-toggle-off"></i></button>';
-                            var emaillink = '<a href="mailto:' + item.email + '">' + item.email + '</a>';
-                            var contactLink = '<a href="tel:' + item.contactNo + '">' + item.contactNo + '</a>';
-                            var id = item.studentID;
 
-                            var editButton = '<button type="button" class="btn btn-primary" onclick="editStudent(\'' + item.studentID + '\')"><i class="bi bi-pencil-fill"></i></button>';
-                            var deleteButton = '<button type="button" class="btn btn-danger" onclick="deleteStudent(\'' + item.studentID + '\')"><i class="bi bi-trash"></i></button>';
-                            var allocatedButton = '<button type="button" class="btn btn-info">Allocated</button>';
+            try {
+                var query = $('#searchQuery').val();
+                var criteria = $('#searchCriteria').val();
 
+                if (query.trim() !== '') {
+                    data =await $.ajax({
+                        url: '/Student/SearchStudent',
+                        type: 'GET',
+                        data: { query: query, criteria: criteria },
+                    });
+                }
+                else {
+                    data = await $.ajax({
+                        url: '/Student/DisplayAllStudents',
+                        type: 'GET',
+                        data: { pageNumber: currentPage, pageSize: pageSize, isActive: filterCriteria },
+                    });
+                }
 
-                            
+              
 
-                            isStudentAllocated(id, function (isAllocated) {
-                        
-                                if (!isAllocated.isAllocated) {
-                                   allocatedButton = '';
-                                } else {
-                                    editButton = '';
-                                    deleteButton = '';
+                $('#tableBody').empty();
+                for(const item of data.data) {
+                    console.log("item", item);
+                    var editUrl = '/Student/UpsertStudent/' + item.studentID;
+                    var deleteUrl = '/Student/DeleteStudent/' + item.studentID;
+                    var enableButton = item.isEnable ? '<button type="button" class="btn btn-success" onclick="toggleEnable(\'' + item.studentID + '\', false,\'' + item.displayName + '\')"><i class="bi bi-toggle-on"></i></button>' : '<button type="button" class="btn btn-danger" onclick="toggleEnable(\'' + item.studentID + '\', true,\'' + item.displayName + '\')"><i class="bi bi-toggle-off"></i></button>';
+                    var emaillink = '<a href="mailto:' + item.email + '">' + item.email + '</a>';
+                    var contactLink = '<a href="tel:' + item.contactNo + '">' + item.contactNo + '</a>';
+                    var id = item.studentID;
 
-                                }
-                                var row = '<tr>' +
-                                    '<td>' + item.studentRegNo + '</td>' +
-                                    '<td>' + item.firstName + '</td>' +
-                                    '<td>' + item.middleName + '</td>' +
-                                    '<td>' + item.lastName + '</td>' +
-                                    '<td>' + item.displayName + '</td>' +
-                                    '<td>' + emaillink + '</td>' +
-                                    '<td>' + item.gender + '</td>' +
-                                    '<td>' + formatDate(item.dob) + '</td>' +
-                                    '<td>' + item.address + '</td>' +
-                                    '<td>' + contactLink + '</td>' +
-                                    '<td>' + enableButton + '</td>' +
-                                    '<td>' +
-                                    editButton + deleteButton +allocatedButton+
+                    var editButton = '<button type="button" class="btn btn-primary" onclick="editStudent(\'' + item.studentID + '\')"><i class="bi bi-pencil-fill"></i></button>';
+                    var deleteButton = '<button type="button" class="btn btn-danger" onclick="deleteStudent(\'' + item.studentID + '\')"><i class="bi bi-trash"></i></button>';
+                    var allocatedButton = '<button type="button" class="btn btn-info">Allocated</button>';
 
-                                    '</td>' +
-                                    '</tr>';
-                                $('#tableBody').append(row);
-                            });
-                        });
-                        updatePagination(pageNumber, data.totalPages)
+                    var isAllocated = await $.ajax({
+                        url: '/Student/IsAllocated',
+                        type: 'GET',
+                        data: { id: id }
+                    });
+                    
+
+                    if (!isAllocated.isAllocated) {
+                        allocatedButton = '';
+                    } else {
+                        editButton = '';
+                        deleteButton = '';
 
                     }
-                    else {
-                        $('#tableBody').empty();
-                        console.log('No data found');
-                        $('#notFound').show();
-                    }
+                    
+                    var row = '<tr>' +
+                        '<td>' + item.studentRegNo + '</td>' +
+                        '<td>' + item.firstName + '</td>' +
+                        '<td>' + item.middleName + '</td>' +
+                        '<td>' + item.lastName + '</td>' +
+                        '<td>' + item.displayName + '</td>' +
+                        '<td>' + emaillink + '</td>' +
+                        '<td>' + item.gender + '</td>' +
+                        '<td>' + formatDate(item.dob) + '</td>' +
+                        '<td>' + item.address + '</td>' +
+                        '<td>' + contactLink + '</td>' +
+                        '<td>' + enableButton + '</td>' +
+                        '<td>' +
+                        editButton + deleteButton + allocatedButton +
 
-
-                },
-                error: function (error) {
-                    console.log(error);
-                    Swal.fire('Error!', 'An error occurred while loading data.', 'error');
+                        '</td>' +
+                        '</tr>';
+                    $('#tableBody').append(row);
+                    
                 }
-            });
+                updatePagination(pageNumber, data.totalPages)
+            }
+            catch {
+                var row = '<tr>' + '<td colspan="12">' + data.message + '</td>' + '</tr>';
+                $('#tableBody').append(row);
+            }
         }
 
-        function isStudentAllocated(id, callback) {
-            $.ajax({
-                url: '/Student/IsAllocated',
-                data: { id: id },
-                success: function (response) {
-                    callback(response);
-                },
-                error: function (error) {
-                    console.log("Error checking allocation:", error);
-                    callback(false);
-                }
-            });
-        }
+        
 
         function addStudentSuccess(response) {
             if (response.success) {

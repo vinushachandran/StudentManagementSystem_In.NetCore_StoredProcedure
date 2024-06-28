@@ -194,15 +194,19 @@ namespace StudentManagementSystem.Controllers
             {
                 var response = _studentRepository.GetSearchStudents(query, criteria);
 
+                var pageData = response.Data.ToList();
 
-                if (response.Success && response.Data.Any())
+
+                if (pageData.Count>0)
                 {
-                    return PartialView("_SearchResults", response.Data.ToList());
+                    return (Json(new { success = true, data = pageData, totalPages = 1 }));
                 }
                 else
                 {
-                    return PartialView("_SearchResults", null);
+                    errorResponse.Messages.Add(string.Format(StaticData.NO_DATA_FOUND,"student" ));
+                    return Json(new { success = errorResponse.Success, message = errorResponse.ErrorMessages, totalPages = 1 });
                 }
+
 
             }
             catch
