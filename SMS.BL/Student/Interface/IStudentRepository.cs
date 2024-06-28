@@ -1,4 +1,10 @@
-﻿using SMS.Model.Student;
+﻿/// <summary>
+///
+/// </summary>
+/// <author>Vinusha</author>
+///
+
+using SMS.Model.Student;
 using SMS.ViewModel.RepositoyResponse;
 using System;
 using System.Collections.Generic;
@@ -11,9 +17,13 @@ namespace SMS.BL.Student.Interface
 	public interface IStudentRepository
 	{
 		/// <summary>
-		/// Get all the student details by it's id
-		/// </summary>
-		/// <returns></returns>
+        /// Get all student detailss
+        /// </summary>
+        /// <param name="pageNo"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="isEnable"></param>
+        /// <param name="totalPage"></param>
+        /// <returns></returns>
         RepositoryResponse<IEnumerable<StudentBO>>GetAllStudents(int pageNo, int pageSize, bool? isEnable, out int totalPage);
 
         /// <summary>
@@ -23,30 +33,27 @@ namespace SMS.BL.Student.Interface
         /// <returns></returns>
         RepositoryResponse<StudentBO> GetOneStudent(long id);
 
-		/// <summary>
-		/// Delete one student details by it's id
-		/// </summary>
-		/// <param name="id"></param>
-		/// <param name="msg"></param>
-		/// <returns></returns>
-		RepositoryResponse<bool> DeleteStudent(long id);
+        /// <summary>
+        ///  Delete one student details by it's id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        RepositoryResponse<bool> DeleteStudent(long id);
 
-		/// <summary>
-		/// Add a new student or edit exsiting student
-		/// </summary>
-		/// <param name="student"></param>
-		/// <param name="msg"></param>
-		/// <returns></returns>
-		RepositoryResponse<bool> SaveStudent(StudentBO student);
+        /// <summary>
+        /// Add a new student or edit exsiting student
+        /// </summary>
+        /// <param name="student"></param>
+        /// <returns></returns>
+        RepositoryResponse<bool> SaveStudent(StudentBO student);
 
-		/// <summary>
-		/// To handle enable disable button
-		/// </summary>
-		/// <param name="id"></param>
-		/// <param name="isEnable"></param>
-		/// <param name="msg"></param>
-		/// <returns></returns>
-		RepositoryResponse<bool> ToggleEnable(long id, bool isEnable);
+        /// <summary>
+        /// To handle enable disable button
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="isEnable"></param>
+        /// <returns></returns>
+        RepositoryResponse<bool> ToggleEnable(long id, bool isEnable);
 
         /// <summary>
         /// Check on this student allocated for any subject

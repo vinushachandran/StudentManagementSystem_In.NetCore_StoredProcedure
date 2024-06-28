@@ -1,4 +1,10 @@
-﻿using Azure;
+﻿/// <summary>
+///
+/// </summary>
+/// <author>Vinusha</author>
+///
+
+using Azure;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using SMS.BL.Student.Interface;
@@ -24,11 +30,15 @@ namespace SMS.BL.Student
 			_dataContext = dataContext;
 		}
 
-		/// <summary>
-		/// Get all the student details
-		/// </summary>
-		/// <returns></returns>
-		public RepositoryResponse<IEnumerable<StudentBO>> GetAllStudents(int pageNo, int pageSize, bool? isEnable, out int totalPage)
+        /// <summary>
+        /// Get all the student details
+        /// </summary>
+        /// <param name="pageNo"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="isEnable"></param>
+        /// <param name="totalPage"></param>
+        /// <returns></returns>
+        public RepositoryResponse<IEnumerable<StudentBO>> GetAllStudents(int pageNo, int pageSize, bool? isEnable, out int totalPage)
 		{	
 			var response=new RepositoryResponse<IEnumerable<StudentBO>>();
 
@@ -83,13 +93,12 @@ namespace SMS.BL.Student
 			return response;
 		}
 
-		/// <summary>
-		/// Delete on student by it's id
-		/// </summary>
-		/// <param name="id"></param>
-		/// <param name="msg"></param>
-		/// <returns></returns>
-		public RepositoryResponse<bool> DeleteStudent(long id)
+        /// <summary>
+        /// Delete on student by it's id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public RepositoryResponse<bool> DeleteStudent(long id)
 		{
 			var responce= new RepositoryResponse<bool>();
 
@@ -133,13 +142,12 @@ namespace SMS.BL.Student
 			}
 		}
 
-		/// <summary>
-		/// Add a new student or update exsisting student
-		/// </summary>
-		/// <param name="student"></param>
-		/// <param name="msg"></param>
-		/// <returns></returns>
-		public RepositoryResponse<bool> SaveStudent(StudentBO student)
+        /// <summary>
+        /// Add a new student or update exsisting student
+        /// </summary>
+        /// <param name="student"></param>
+        /// <returns></returns>
+        public RepositoryResponse<bool> SaveStudent(StudentBO student)
 		{
 			var response=new RepositoryResponse<bool>();
 
@@ -197,14 +205,13 @@ namespace SMS.BL.Student
 		}
 
 
-		/// <summary>
-		/// handling enable disable button
-		/// </summary>
-		/// <param name="id"></param>
-		/// <param name="isEnable"></param>
-		/// <param name="msg"></param>
-		/// <returns></returns>
-		public RepositoryResponse<bool> ToggleEnable(long id, bool isEnable)
+        /// <summary>
+        /// handling enable disable button
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="isEnable"></param>
+        /// <returns></returns>
+        public RepositoryResponse<bool> ToggleEnable(long id, bool isEnable)
 		{
 			var response = new RepositoryResponse<bool>();
 			try
@@ -251,11 +258,11 @@ namespace SMS.BL.Student
 
 
 
-        ///<summary>
-        /// To check this student  allready allocated for a subject
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
+        /// <summary>
+		/// To check this student  allready allocated for a subject
+		/// </summary>
+		/// <param name="id"></param>
+		/// <returns></returns>
         public RepositoryResponse<bool> CheckStudentInUse(long id)
         {
 			var response = new RepositoryResponse<bool>();
@@ -289,11 +296,11 @@ namespace SMS.BL.Student
 
 
         /// <summary>
-        /// To access search bar based on search criteria
-        /// </summary>
-        /// <param name="item"></param>
-        /// <param name="criteria"></param>
-        /// <returns></returns>
+		/// To access search bar based on search criteria
+		/// </summary>
+		/// <param name="item"></param>
+		/// <param name="criteria"></param>
+		/// <returns></returns>
         public RepositoryResponse<IEnumerable<StudentBO>> GetSearchStudents(string item, string criteria)
         {
 			var response= new RepositoryResponse<IEnumerable<StudentBO>>();
@@ -335,11 +342,11 @@ namespace SMS.BL.Student
 
 
         /// <summary>
-        /// Check this students reg number already exist
-        /// </summary>
-        /// <param name="studentRegNumber"></param>
-        /// <param name="studentId"></param>
-        /// <returns></returns>
+		/// To access search bar based on search criteria
+		/// </summary>
+		/// <param name="studentRegNumber"></param>
+		/// <param name="studentId"></param>
+		/// <returns></returns>
         public RepositoryResponse<bool> CheckStudentRegNo(string studentRegNumber, long studentId)
         {
 			var response=new RepositoryResponse<bool>();
