@@ -34,7 +34,7 @@ namespace SMS.Model.Student
 		public string Gender { get; set; }
 		[Required(ErrorMessage = "Date of Birth is required")]
 		[DisplayName("Date Of Birth")]
-		public System.DateTime DOB { get; set; }
+		public System.DateOnly DOB { get; set; }
 		[Required(ErrorMessage = "Address is required")]
 		[DisplayName("Address")]
 		public string Address { get; set; }

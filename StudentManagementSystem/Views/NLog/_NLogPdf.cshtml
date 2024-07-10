@@ -1,0 +1,51 @@
+﻿@model SMS.ViewModel.Nlog.NLogDateFilterViewModel
+
+@{
+    Layout = null;
+
+}
+<head>
+    <link rel="stylesheet" href="~/css/pdf.css" asp-append-version="true" />
+    
+</head>
+
+@if (Model != null && Model.NlogList.Any())
+{
+    <div>
+        <table id="" class="table table-bordered table-striped nlogTable">
+            <thead class="tableheading text-center">
+                <tr>
+                    <th>Date</th>
+                    <th>Level</th>
+                    <th>Logger</th>
+                    <th>Message</th>
+                    <th>Exception</th>
+                </tr>
+            </thead>
+            <tbody class="text-center" id="tableBody">
+                @foreach (var log in Model.NlogList)
+                {
+                    <tr>
+                        <td>@log.Date</td>
+                        <td>@log.Level</td>
+                        <td>@log.Logger</td>
+                        <td>@log.Message</td>
+                        <td>@(log.Exception ?? "N/A")</td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+    </div>
+
+
+
+}
+else
+{
+    <p>No log entries found.</p>
+}
+
+
+
+

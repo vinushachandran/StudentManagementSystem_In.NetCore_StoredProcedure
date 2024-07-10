@@ -1,0 +1,78 @@
+﻿@model SMS.ViewModel.Student.StudentViewModel
+
+@{
+    Layout = null;
+
+}
+
+<table id="studentDetails" class="table table-bordered table-striped ">
+    @if (Model != null)
+    {
+        <thead class="tableheading text-center">
+            <tr>
+                <th id="sorting">@Html.DisplayNameFor(model => model.Students.First().StudentRegNo)</th>
+                <th id="sorting">@Html.DisplayNameFor(model => model.Students.First().DisplayName)</th>
+                <th id="sorting">@Html.DisplayNameFor(model => model.Students.First().Email)</th>
+                <th>@Html.DisplayNameFor(model => model.Students.First().Gender)</th>
+                <th id="sorting">@Html.DisplayNameFor(model => model.Students.First().DOB)</th>
+                <th id="sorting">@Html.DisplayNameFor(model => model.Students.First().Address)</th>
+                <th id="sorting">@Html.DisplayNameFor(model => model.Students.First().ContactNo)</th>
+                <th>@Html.DisplayNameFor(model => model.Students.First().IsEnable)</th>
+                
+            </tr>
+        </thead>
+        if (Model.Students.Any())
+        {
+            <tbody class="text-center" id="tableBody">
+                @foreach (var item in Model.Students)
+                {
+                    var enableButton = item.IsEnable
+                    ? $"<button type='button' class='btn btn-success' onclick=\"toggleEnable('{item.StudentID}', false, '{item.DisplayName}')\"><i class='bi bi-toggle-on'></i></button>"
+                    : $"<button type='button' class='btn btn-danger' onclick=\"toggleEnable('{item.StudentID}', true, '{item.DisplayName}')\"><i class='bi bi-toggle-off'></i></button>";
+                    var emailLink = $"<a href='mailto:{item.Email}'>{item.Email}</a>";
+                    var contactLink = $"<a href='tel:{item.ContactNo}'>{item.ContactNo}</a>";
+                    var id = item.StudentID;
+
+
+
+                    <tr>
+                        <td>@item.StudentRegNo</td>
+                        <td>@item.DisplayName</td>
+                        <td>
+                            <i class="bi bi-envelope" data-toggle="tooltip" title="@item.Email" data-email="@item.Email" onclick="copyToClipboard(this)" style="cursor: pointer;"></i>
+
+                        </td>
+                        <td>@item.Gender</td>
+                        <td>@item.DOB</td>
+                        <td>@item.Address</td>
+                        <td>
+                            <i class="bi bi-telephone" data-toggle="tooltip" title="@item.ContactNo" data-contact="@item.ContactNo" onclick="copyToClipboard(this)" style="cursor: pointer;"></i>
+                        </td>
+                        <td>@Html.Raw(enableButton)</td>
+                       
+                    </tr>
+
+                   
+                }
+
+            </tbody>
+            <tr>
+                <td colspan="12" class="text-center">Page @Html.Raw(Model.PageNumber) of @Html.Raw(Model.TotalPages)</td>
+            </tr>
+
+            <script>
+                var getTotalPage = @Html.Raw(Model.TotalPages);
+            </script>
+
+        }
+
+        else
+        {
+            <tr>
+                <td colspan="12" class="text-center">No data found </td>
+            </tr>
+        }
+
+
+    }
+</table>

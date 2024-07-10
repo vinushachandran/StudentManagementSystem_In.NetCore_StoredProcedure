@@ -1,0 +1,126 @@
+﻿@model SMS.ViewModel.Student.StudentViewModel
+<table id="studentDetails" class="table table-bordered table-striped ">
+    @if (Model != null)
+    {
+        <thead class="tableheading text-center">
+            <tr>
+                <th id="sorting">@Html.DisplayNameFor(model => model.Students.First().StudentRegNo)</th>                
+                <th id="sorting">@Html.DisplayNameFor(model => model.Students.First().DisplayName)</th>
+                <th id="sorting">@Html.DisplayNameFor(model => model.Students.First().Email)</th>
+                <th>@Html.DisplayNameFor(model => model.Students.First().Gender)</th>
+                <th id="sorting">@Html.DisplayNameFor(model => model.Students.First().DOB)</th>
+                <th id="sorting">@Html.DisplayNameFor(model => model.Students.First().Address)</th>
+                <th id="sorting">@Html.DisplayNameFor(model => model.Students.First().ContactNo)</th>
+                <th>@Html.DisplayNameFor(model => model.Students.First().IsEnable)</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        if (Model.Students.Any())
+        {
+            <tbody class="text-center" id="tableBody">
+                @foreach (var item in Model.Students)
+                {
+                    var enableButton = item.IsEnable
+                    ? $"<button type='button' class='btn btn-success' onclick=\"toggleEnable('{item.StudentID}', false, '{item.DisplayName}')\"><i class='bi bi-toggle-on'></i></button>"
+                    : $"<button type='button' class='btn btn-danger' onclick=\"toggleEnable('{item.StudentID}', true, '{item.DisplayName}')\"><i class='bi bi-toggle-off'></i></button>";
+                    var emailLink = $"<a href='mailto:{item.Email}'>{item.Email}</a>";
+                    var contactLink = $"<a href='tel:{item.ContactNo}'>{item.ContactNo}</a>";
+                    var id = item.StudentID;
+                   
+                  
+                   
+                    <tr>                       
+                        <td>@item.StudentRegNo</td>                       
+                        <td>@item.DisplayName</td>
+                        <td>                           
+                            <i class="bi bi-envelope" data-toggle="tooltip" title="@item.Email" data-email="@item.Email" onclick="copyToClipboard(this)" style="cursor: pointer;"></i>
+                        
+                        </td>
+                        <td>@item.Gender</td>
+                        <td>@item.DOB</td>
+                        <td>@item.Address</td>
+                        <td>
+                            <i class="bi bi-telephone" data-toggle="tooltip" title="@item.ContactNo" data-contact="@item.ContactNo" onclick="copyToClipboard(this)" style="cursor: pointer;"></i>
+                        </td>
+                        <td>@Html.Raw(enableButton)</td>
+                        <td>
+
+                            <button type="button" class="btn btn-sm btn-primary" id="editBtn_@item.StudentID" onclick="editStudent('@item.StudentID')"><i class='bi bi-pencil-fill'></i></button>
+                            <button type="button" class="btn btn-sm btn-danger" id="deleteBtn_@item.StudentID" onclick="deleteStudent('@item.StudentID',false,'@item.DisplayName')"><i class="bi bi-trash"></i></button>
+                            <span id="allocated_@item.StudentID" class='btn btn-primary'>Allocated</span>
+                            <button type="button" class="btn btn-sm btn-info m-1" onclick="showStudentDetails('@item.StudentID')"><i class='bi bi-files'></i></button>
+
+                        </td>
+                    </tr>
+
+                    <script>
+                        //check the student is allocated or not
+                        $.ajax({
+                        url: '/Student/IsAllocated',
+                        type: 'GET',
+                        data: { id: '@item.StudentID' },
+                        success: function (response) {
+                        if (response.isAllocated) {
+                        $('#editBtn_@item.StudentID, #deleteBtn_@item.StudentID').hide();
+                        $('#allocated_@item.StudentID').show();
+                        }
+                        else {
+                        $('#allocated_@item.StudentID').hide();
+                        }
+                        }
+                        });
+                    </script>
+                }
+
+            </tbody>
+            <tr>
+                <td colspan="12" class="text-center">Page @Html.Raw(Model.PageNumber) of @Html.Raw(Model.TotalPages)</td>
+            </tr>
+
+            <script>
+                var getTotalPage = @Html.Raw(Model.TotalPages);
+            </script>
+
+        }
+
+        else
+        {
+            <tr>
+                <td colspan="12" class="text-center">No data found </td>
+            </tr>
+        }
+
+
+    }
+</table>
+
+<!--TO show the one student details-->
+<div id="studentDetailsPopup" class="student-details-popup">
+    <div class="student-details-content">
+        <button type="button" class="close btn-danger" id="closeStudentDetailsPopup"><i class="bi bi-x-lg"></i></button>
+        <div id="studentDetailsContent">
+            <!-- Student details will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<!--To handling pagination-->
+<div class="container-fluid">
+    <nav aria-label="Page navigation">
+        <ul class="pagination pagination-container">
+            <li class="page-item mr-auto" id="prevButton">
+                <a class="page-link" href="#" aria-label="Previous" onclick="previousData()">
+                    <span aria-hidden="true">&laquo;</span>
+                    <span class="sr-only">Previous</span>
+                </a>
+            </li>
+            <li class="page-item ml-auto" id="nextButton">
+                <a class="page-link" href="#" aria-label="Next" onclick="nextData()">
+                    <span aria-hidden="true">&raquo;</span>
+                    <span class="sr-only">Next</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+

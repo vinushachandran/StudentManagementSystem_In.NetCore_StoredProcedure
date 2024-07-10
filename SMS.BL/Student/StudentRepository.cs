@@ -12,6 +12,7 @@ using SMS.Data;
 using SMS.Model.Student;
 using SMS.ViewModel.RepositoyResponse;
 using SMS.ViewModel.StaticData;
+using SMS.ViewModel.Student;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -31,20 +32,18 @@ namespace SMS.BL.Student
 		}
 
         /// <summary>
-        /// Get all the student details
-        /// </summary>
-        /// <param name="pageNo"></param>
-        /// <param name="pageSize"></param>
-        /// <param name="isEnable"></param>
-        /// <param name="totalPage"></param>
-        /// <returns></returns>
-        public RepositoryResponse<IEnumerable<StudentBO>> GetAllStudents(int pageNo, int pageSize, bool? isEnable, out int totalPage)
+		///  Get all the student details
+		/// </summary>
+		/// <param name="studentModel"></param>
+		/// <param name="totalPage"></param>
+		/// <returns></returns>
+        public RepositoryResponse<IEnumerable<StudentBO>> GetAllStudents(StudentViewModel studentModel)
 		{	
 			var response=new RepositoryResponse<IEnumerable<StudentBO>>();
 
-            var pageNoParam = new SqlParameter("@PageNo", pageNo);
-            var pageSizeParam = new SqlParameter("@PageSize", pageSize);
-            var isEnableParam = new SqlParameter("@IsEnable", isEnable.HasValue ? (object)isEnable.Value : DBNull.Value);
+            var pageNoParam = new SqlParameter("@PageNo", studentModel.PageNumber);
+            var pageSizeParam = new SqlParameter("@PageSize", studentModel.PageSize);
+            var isEnableParam = new SqlParameter("@IsEnable", studentModel.IsEnable.HasValue ? (object)studentModel.IsEnable.Value : DBNull.Value);
 
             var totalPageParam = new SqlParameter
             {
@@ -58,8 +57,9 @@ namespace SMS.BL.Student
 			if(pageData.Count > 0 )
 			{
 				response.Data = pageData;
+                response.Message.Add(string.Format(StaticData.SUCCESS_MESSAGE, $"get all data"));
 
-			}
+            }
 			else
 			{
 				response.Success = false;
@@ -67,7 +67,7 @@ namespace SMS.BL.Student
 			}
 
 
-            totalPage = (int)totalPageParam.Value;
+            response.TotalPages = (int)totalPageParam.Value;
 
             return response;
         }
@@ -84,8 +84,10 @@ namespace SMS.BL.Student
 
 			var studentIdParam = new SqlParameter("@StudentID", id);
 			var student = _dataContext.Students.FromSqlRaw("EXEC GetOneStudentDetails @StudentID",studentIdParam).AsEnumerable().FirstOrDefault();
+			response.Data = student;
+            response.Message.Add(string.Format(StaticData.SUCCESS_MESSAGE,$"{id} get data"));
 
-			if (student == null)
+            if (student == null)
 			{
 				response.Success=false;
 				response.Message.Add(string.Format(StaticData.NO_DATA_FOUND,$"{id} data "));
@@ -130,9 +132,11 @@ namespace SMS.BL.Student
 
 				responce.Data=(bool)isDeletedParam.Value;
 				responce.Message.Add (errorMessageParam.Value as string ?? string.Empty);
-				
+                
 
-				return responce;
+
+
+                return responce;
 			}
 			catch
 			{
@@ -147,7 +151,7 @@ namespace SMS.BL.Student
         /// </summary>
         /// <param name="student"></param>
         /// <returns></returns>
-        public RepositoryResponse<bool> SaveStudent(StudentBO student)
+        public RepositoryResponse<bool> UpsertStudent(StudentBO student)
 		{
 			var response=new RepositoryResponse<bool>();
 
@@ -222,28 +226,34 @@ namespace SMS.BL.Student
 					SqlDbType = System.Data.SqlDbType.Bit,
 					Direction = System.Data.ParameterDirection.Output
 				};
-				var parameters = new[]
+                var errorMessageParam = new SqlParameter
+                {
+                    ParameterName = "@ErrorMessage",
+                    SqlDbType = System.Data.SqlDbType.NVarChar,
+                    Size = 255,
+                    Direction = System.Data.ParameterDirection.Output
+                };
+                var parameters = new[]
 				{
 					new SqlParameter("@StudentID", id),
 					new SqlParameter("@IsEnable", isEnable),
-					new SqlParameter
-					{
-						ParameterName = "@ErrorMessage",
-						SqlDbType = System.Data.SqlDbType.NVarChar,
-						Size = 255,
-						Direction = System.Data.ParameterDirection.Output
-					},
+                    errorMessageParam,
 					successParam
-				};
+                };
 
 				_dataContext.Database.ExecuteSqlRaw("EXEC sp_ToggleEnableStudent @StudentID, @IsEnable, @ErrorMessage OUTPUT, @Success OUTPUT", parameters);
 
 				response.Data=(bool)successParam.Value;
-				response.Message.Add(parameters.First(p => p.ParameterName == "@ErrorMessage").Value as string ?? string.Empty);
+                response.Message.Add(errorMessageParam.Value as string ?? string.Empty);
+
 
                 if (!(bool)successParam.Value)
                 {
                     response.Success = false;
+                }
+                else
+                {
+                    response.Success = true; 
                 }
 
                 return response;
@@ -301,16 +311,16 @@ namespace SMS.BL.Student
 		/// <param name="item"></param>
 		/// <param name="criteria"></param>
 		/// <returns></returns>
-        public RepositoryResponse<IEnumerable<StudentBO>> GetSearchStudents(string item, string criteria)
+        public RepositoryResponse<IEnumerable<StudentBO>> GetSearchStudents(StudentSearchViewModel searchStudentModel)
         {
 			var response= new RepositoryResponse<IEnumerable<StudentBO>>();
             try
             {
 
-                var searchItem = new SqlParameter("@Item", $"%{item}%");
-                var searchCriteria = string.IsNullOrEmpty(criteria)
+                var searchItem = new SqlParameter("@Item", $"%{searchStudentModel.StudentSearchQuery}%");
+                var searchCriteria = string.IsNullOrEmpty(searchStudentModel.StudentSearchCriteria)
                      ? new SqlParameter("@Criteria", DBNull.Value)
-                     : new SqlParameter("@Criteria", criteria);
+                     : new SqlParameter("@Criteria", searchStudentModel.StudentSearchCriteria);
 
                 string sqlQuery = "EXEC sp_SearchStudentsDetails @Criteria, @Item";
 
@@ -386,6 +396,7 @@ namespace SMS.BL.Student
                 };
 
                 _dataContext.Database.ExecuteSqlRaw("SELECT @Result = dbo.fn_CheckStudentName(@StudentID,@DisplayName)", studentID, studentName,  result);
+                response.Message.Add(string.Format(StaticData.SUCCESS_MESSAGE));
                 response.Data = (bool)result.Value;
                 return response;
             }

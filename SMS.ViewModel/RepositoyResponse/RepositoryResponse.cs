@@ -14,7 +14,25 @@ namespace SMS.ViewModel.RepositoyResponse
 
         public List<string> Message { get; set; }=new List<string>();
 
+        public string TotalMessages
+        {
+            get
+            {
+                var msg = "";
+                if (Message.Count > 0)
+                {
 
+                    foreach (var item in Message)
+                    {
+                        msg = item.ToString() + "\n";
+                    }
+                    return msg;
+                }
+                return msg;
+            }
+        }
+
+        public int TotalPages { get; set; }
 
 
     }

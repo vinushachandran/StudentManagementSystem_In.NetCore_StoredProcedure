@@ -1,0 +1,46 @@
+﻿@model SMS.ViewModel.Nlog.NLogDateFilterViewModel
+
+
+@if (Model != null && Model.NlogList.Any())
+{
+    @* <button class="btn me-2 pdf-btn text-light" onclick="window.location.href='@Url.Action("DownloadPdf", "NLog")'">Download PDF</button> *@
+    <button id="pdfDownload" class="btn me-2 pdf-btn text-light" onclick="downloadPdf()">Download PDF</button>
+    <div class="scrollable-Table mt-2">
+        <table id="" class="table table-bordered table-striped nlogTable">
+            <thead class="tableheading text-center">
+                <tr>
+                    <th>Date</th>
+                    <th>Level</th>
+                    <th>Logger</th>
+                    <th>Message</th>
+                    <th>Exception</th>
+                </tr>
+            </thead>
+            <tbody class="text-center" id="tableBody">
+                @foreach (var log in Model.NlogList)
+                {
+                    <tr>
+                        
+                        <td>@String.Format("{0:" + SMS.Common.DateFormat.defaultDateFormat + " HH:mm:ss tt}", @log.Date)</td>
+                        <td>@log.Level</td>
+                        <td>@log.Logger</td>
+                        <td>@log.Message</td>
+                        <td>@(log.Exception ?? "N/A")</td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+    </div>
+
+   
+
+}
+else
+{
+    <p>No log entries found.</p>
+}
+
+
+
+

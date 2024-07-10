@@ -12,11 +12,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using SMS.BL.NLog.Interface;
 using SMS.BL.Student.Interface;
 using SMS.Model.Student;
 using SMS.ViewModel.ErrorResponse;
+using SMS.ViewModel.Nlog;
 using SMS.ViewModel.StaticData;
 using SMS.ViewModel.Student;
+using ClosedXML.Excel;
+using Rotativa.AspNetCore;
 
 
 namespace StudentManagementSystem.Controllers
@@ -24,12 +28,16 @@ namespace StudentManagementSystem.Controllers
     public class StudentController : Controller
     {
 		IStudentRepository _studentRepository;
+        INLogRepository _logRepository;
+        private readonly ILogger<StudentController> _logger;
 
         ErrorResponse errorResponse=new ErrorResponse();
 		
-        public StudentController(IStudentRepository studentRepository)
+        public StudentController(IStudentRepository studentRepository,INLogRepository nLogRepository, ILogger<StudentController> logger)
         {
             _studentRepository = studentRepository;
+            _logRepository = nLogRepository;
+            _logger = logger;
         }
 
         // GET: Student
@@ -39,22 +47,36 @@ namespace StudentManagementSystem.Controllers
         }
 
         // GET: Student/Details/5
-        public IActionResult DisplayAllStudents(int pageNumber, int pageSize, bool? isActive = null)
+        /// <summary>
+        /// Get all student details
+        /// </summary>
+        /// <param name="studentModel"></param>
+        /// <returns></returns>
+        public IActionResult DisplayAllStudents(StudentViewModel studentModel)
         {
             int totalPage;
             try
-            {
-                var response = _studentRepository.GetAllStudents(pageNumber, pageSize, isActive, out totalPage);
+            {              
 
-                var pageData = response.Data.ToList();
+                var response = _studentRepository.GetAllStudents(studentModel);
 
-
-                if (pageData.Count > 0)
+                var studentViewModel = new StudentViewModel
                 {
-                    return (Json(new { success = true, data = pageData, totalPages = totalPage }));
+                    Students = response.Data,
+                    PageSize = studentModel.PageSize,
+                    PageNumber = studentModel.PageNumber,
+                    TotalPages = response.TotalPages
+                };
+
+
+                if (studentViewModel.Students != null)
+                {
+                    _logger.LogInformation(response.TotalMessages);
+                    return PartialView("_StudentsList", studentViewModel);
                 }
                 else
                 {
+                    _logger.LogWarning("No students found.");
                     errorResponse.Messages.Add(string.Format(response.Message.ToString()));
                     return new JsonResult(errorResponse);
                 }
@@ -62,25 +84,52 @@ namespace StudentManagementSystem.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error retrieving student data");
                 return (Json(new { success = false, message = "Error retrieving student data", error = ex.Message }));
             }
 
         }
 
-       
+        
+        /// <summary>
+        /// Get one student details
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public IActionResult GetStudentDetails(long id)
+        {
+            var response = _studentRepository.GetOneStudent(id);
+            var studentViewModel = new StudentViewModel
+            {
+                StudentDetail = response.Data
+            };
+            if (response.Success)
+            {
+                _logger.LogInformation(response.TotalMessages);
+                return PartialView("_StudentDetails", studentViewModel);
+            }
+            else
+            {
+                _logger.LogWarning(response.TotalMessages);
+                return Json(new { success = response.Success, message = response.Message });
+            }
+        }
 
-		/// <summary>
-		/// Delete one student by it's id
-		/// </summary>
-		/// <param name="id"></param>
-		/// <returns></returns>
-		public ActionResult DeleteStudent(int id)
+
+
+        /// <summary>
+        /// Delete one student by it's id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public ActionResult DeleteStudent(int id)
 		{
 			try
 			{
 				var response = _studentRepository.DeleteStudent(id);
+                _logger.LogInformation("Student ID: {StudentId} deletion status: {Status}", id, response.Success);
 
-				return Json(new { success = response.Success, message = response.Message});
+                return Json(new { success = response.Success, message = response.Message});
 			}
 			catch
 			{
@@ -94,14 +143,14 @@ namespace StudentManagementSystem.Controllers
 		{
 			if (id == 0)
 			{
-				return PartialView("_Add", new StudentBO());
+				return PartialView("_UpsertStudent", new StudentBO());
 
 			}
 			else
 			{
 
-				var exsitingStudent = _studentRepository.GetOneStudent(id);
-				return PartialView("_Add", exsitingStudent);
+				var response = _studentRepository.GetOneStudent(id);
+				return PartialView("_UpsertStudent", response.Data);
 			}
 
 		}
@@ -120,7 +169,7 @@ namespace StudentManagementSystem.Controllers
 				try
 				{
 
-                    var response = _studentRepository.SaveStudent(student);
+                    var response = _studentRepository.UpsertStudent(student);
 
 					return Json(new { success = response.Success, message = string.Join(", ", response.Message) });
 				}
@@ -152,7 +201,8 @@ namespace StudentManagementSystem.Controllers
             {
                 var response = _studentRepository.ToggleEnable(id, enable);
 
-                return Json(new { success = response.Success, message = response.Message });
+                return Json(new { success = response.Success, message = response.Message.FirstOrDefault() ?? string.Empty });
+
             }
             catch
             {
@@ -182,32 +232,34 @@ namespace StudentManagementSystem.Controllers
 
 
         /// <summary>
-        /// To access the seach bar
+        /// To access the search filter
         /// </summary>
-        /// <param name="query"></param>
-        /// <param name="criteria"></param>
+        /// <param name="searchViewModel"></param>
         /// <returns></returns>
         [HttpGet]
-        public ActionResult SearchStudent(string query, string criteria)
+        public IActionResult SearchStudent(StudentSearchViewModel searchViewModel)
         {
             try
             {
-                var response = _studentRepository.GetSearchStudents(query, criteria);
+                var response = _studentRepository.GetSearchStudents(searchViewModel);
 
-                var pageData = response.Data.ToList();
-
-
-                if (pageData.Count>0)
+                var studentViewModel = new StudentViewModel
                 {
-                    return (Json(new { success = true, data = pageData, totalPages = 1 }));
+                    Students = response.Data,                    
+                    PageNumber = 1,
+                    TotalPages = 1
+                };
+
+
+                if (studentViewModel.Students != null)
+                {
+                    return PartialView("_StudentsList", studentViewModel);
                 }
                 else
                 {
-                    errorResponse.Messages.Add(string.Format(StaticData.NO_DATA_FOUND,"student" ));
-                    return Json(new { success = errorResponse.Success, message = errorResponse.ErrorMessages, totalPages = 1 });
-                }
-
-
+                    errorResponse.Messages.Add(string.Format(response.Message.ToString()));
+                    return new JsonResult(errorResponse);
+                }               
             }
             catch
             {
@@ -217,10 +269,34 @@ namespace StudentManagementSystem.Controllers
             
         }
 
+        public IActionResult SearchAutoComplete(string query, string criteria)
+        {
+            var searchResult = _studentRepository.GetSearchStudents(new StudentSearchViewModel
+            {
+                StudentSearchQuery = query,
+                StudentSearchCriteria = criteria
+            });
+
+            var result = searchResult.Data.Select(s => new
+            {
+                label = criteria switch
+                {
+                    "StudentRegNo" => s.StudentRegNo,
+                    "DisplayName" => s.DisplayName,
+                    _ => s.DisplayName
+                },
+                value = s.StudentID
+            });
+
+            return Json(result);
+        }
+
+
         /// <summary>
         /// To check the student registration number already exist or not
         /// </summary>
         /// <param name="regNo"></param>
+        /// <param name="stdID"></param>
         /// <returns></returns>
         [HttpGet]
         public JsonResult IsStudentRegAvailable(string regNo,long stdID)
@@ -239,11 +315,11 @@ namespace StudentManagementSystem.Controllers
 
 
         /// <summary>
-        /// To check this student displayname already available or not
+        /// check this student displayname already available or not
         /// </summary>
         /// <param name="studentName"></param>
+        /// <param name="stdID"></param>
         /// <returns></returns>
-
         public JsonResult IsStudentNameAvailable(string studentName, long stdID)
         {
             var response = _studentRepository.CheckStudentName(studentName, stdID);
@@ -256,11 +332,11 @@ namespace StudentManagementSystem.Controllers
                 return Json(new { success = false, message = string.Join(", ", response.Message) });
             }
         }
-
         /// <summary>
         /// To check one email address already exist or not
         /// </summary>
-        /// <param name="teacherEmail"></param>
+        /// <param name="studentEmail"></param>
+        /// <param name="stdID"></param>
         /// <returns></returns>
         public JsonResult IsStudentEmailAvailable(string studentEmail, long stdID)
         {
@@ -275,6 +351,104 @@ namespace StudentManagementSystem.Controllers
             }
         }
 
+
+        public IActionResult DownloadExcel()
+        {
+            try
+            {
+                // Set page size to a large number to get all students in one request.
+                var studentModel = new StudentViewModel
+                {
+                    PageNumber = 1,
+                    PageSize = int.MaxValue
+                };
+
+                // Get all students data using repository method
+                var studentsResponse = _studentRepository.GetAllStudents(studentModel);
+
+                // Check if data retrieval was successful
+                if (studentsResponse.Success)
+                {
+                    // Create Excel workbook and worksheet
+                    var workbook = new XLWorkbook();
+                    var worksheet = workbook.Worksheets.Add("Students");
+
+                    // Add headers
+                    var headers = new[] { "Registration No", "First Name", "Middle Name", "Last Name", "Display Name", "Email", "Gender", "Date Of Birth", "Address", "Contact No", "Status" };
+                    for (int i = 0; i < headers.Length; i++)
+                    {
+                        worksheet.Cell(1, i + 1).Value = headers[i];
+                    }
+
+                    // Add data rows
+                    var students = studentsResponse.Data.ToList(); // Convert IEnumerable to List
+                    for (int i = 0; i < students.Count; i++)
+                    {
+                        var student = students[i];
+                        worksheet.Cell(i + 2, 1).Value = student.StudentRegNo;
+                        worksheet.Cell(i + 2, 2).Value = student.FirstName;
+                        worksheet.Cell(i + 2, 3).Value = student.MiddleName;
+                        worksheet.Cell(i + 2, 4).Value = student.LastName;
+                        worksheet.Cell(i + 2, 5).Value = student.DisplayName;
+                        worksheet.Cell(i + 2, 6).Value = student.Email;
+                        worksheet.Cell(i + 2, 7).Value = student.Gender;
+                        worksheet.Cell(i + 2, 8).Value = student.DOB.ToString("yyyy-MM-dd");
+                        worksheet.Cell(i + 2, 9).Value = student.Address;
+                        worksheet.Cell(i + 2, 10).Value = student.ContactNo;
+                        worksheet.Cell(i + 2, 11).Value = student.IsEnable ? "Enabled" : "Disabled";
+                    }
+
+                    // Prepare memory stream for Excel file
+                    using (var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        stream.Seek(0, SeekOrigin.Begin); // Reset stream position
+                        return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students.xlsx");
+                    }
+                }
+                else
+                {
+                    // Handle case where no data is found or other repository errors
+                    TempData["ErrorMessage"] = "Failed to generate Excel file. No data found or error occurred.";
+                    return RedirectToAction("Index"); // Redirect to appropriate action or view
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                _logger.LogError(ex, "An error occurred while generating the Excel file.");
+
+                // Handle the exception (e.g., show an error message to the user)
+                TempData["ErrorMessage"] = "An error occurred while generating the Excel file.";
+                return RedirectToAction("Index");
+            }
+        }
+
+        public IActionResult DownloadPdf(StudentViewModel studentViewModel)
+        {
+            try
+            {
+                var response = _studentRepository.GetAllStudents(studentViewModel);
+
+                var studentviewmodel = new StudentViewModel
+                {
+                    Students = response.Data
+                };
+
+                var pdfContent = new ViewAsPdf("_StudentListPdf", studentviewmodel)
+                {
+                    FileName = "StudentList.pdf",
+                    PageSize = Rotativa.AspNetCore.Options.Size.A4,
+                    PageOrientation = Rotativa.AspNetCore.Options.Orientation.Portrait,
+                };
+
+                return pdfContent;
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal Server Error: {ex.Message}");
+            }
+        }
 
     }
 }

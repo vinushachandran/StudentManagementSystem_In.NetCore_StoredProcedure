@@ -1,0 +1,156 @@
+﻿@model SMS.ViewModel.Nlog.NLogDateFilterViewModel
+
+@{
+    var dateFormat = SMS.Common.DateFormat.defaultDateFormat;
+}
+<div class="card card-custom mt-5">
+    <div class="card-header">
+        <h3 class="card-title">Filter Logs and Charts</h3>
+    </div>
+    <div class="card-body">
+        <div class="align-items-center">
+            <form id="logFilterForm">
+                <div class="form-group">
+                    <label asp-for="StartDate">Start Date:</label>
+                    @Html.TextBoxFor(model => model.StartDate, new { @class = "form-control", placeholder = "DD-MM-YYYY", id = "startDate" })
+                    
+                    
+
+                </div>
+                <div class="form-group">
+                    <label asp-for="EndDate">End Date:</label>
+                   
+                    @Html.TextBoxFor(model => model.EndDate, new { @class = "form-control", placeholder = "DD-MM-YYYY", id = "endDate" })
+                </div>
+               @*  <div class="form-group">
+                    <label asp-for="StartDate">Start Date:</label>
+                    <input asp-for="StartDate" class="form-control" type="date" id="startDate" placeholder="DD-MM-YYYY" />
+                </div>
+                <div class="form-group">
+                    <label asp-for="EndDate">End Date:</label>
+                    <input asp-for="EndDate" class="form-control" type="date" id="endDate" placeholder="DD-MM-YYYY" />
+                </div> *@
+
+                
+                
+
+                <div id="dateError" class="text-danger mt-2"></div>
+                <hr> <!-- Separator line -->
+                <div class="form-group flex-wrap">
+                    <label for="Level">Log Level:</label>
+                    <select asp-for="Level" id="logLevel" class="form-control">
+                        <option value="" selected>All</option>
+                        <option value="info">Info</option>
+                        <option value="warn">Warn</option>
+                        <option value="error">Error</option>
+                    </select>
+                </div>
+            </form>
+
+            <div class="d-flex justify-content-end mt-3">
+                <button id="pieChartButton" class="btn  me-2 chart-button text-light" data-bs-toggle="modal" data-bs-target="#pieChartModal">Pie Chart</button>
+                
+                <button id="columnChartButton" class="btn me-2  chart-button text-light" data-bs-toggle="modal" data-bs-target="#columnChartModal">Column Chart</button>
+
+                <button id="lineChartButton" class="btn me-2  chart-button text-light" data-bs-toggle="modal" data-bs-target="#lineChartModal">Daily Report</button>
+                
+                
+            </div>
+            @* <button class="btn me-2 pdf-btn text-light" onclick="window.location.href='@Url.Action("DownloadPdf", "NLog")'">Download PDF</button> *@
+
+           
+            <!-- Pie Chart Modal -->
+            <div class="modal fade" id="pieChartModal" tabindex="-1" aria-labelledby="pieChartModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        @Html.Partial("_PieChartPartial")
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column Chart Modal -->
+            <div class="modal fade" id="columnChartModal" tabindex="-1" aria-labelledby="columnChartModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        @Html.Partial("_ColumnChartPartial")
+                    </div>
+                </div>
+            </div>
+
+            <!-- daily Chart Modal -->
+            <div class="modal fade" id="lineChartModal" tabindex="-1" aria-labelledby="lineChartModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        @Html.Partial("_DailyChartPartial")
+                    </div>
+                </div>
+            </div>
+
+            
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="modal fade" id="filteredChartModal" tabindex="-1" role="dialog" aria-labelledby="filteredChartModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filteredChartModalLabel">Filtered Log Levels Distribution</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="filteredChartContainer">
+                    <!-- Chart will be loaded here dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+   
+    <script>
+        
+        $(document).ready(function () {
+            var dateFormat = "@dateFormat".replace(/yy/g, "y").replace(/M/g, "m");
+            var today = new Date();
+            $("#startDate").datepicker({
+                dateFormat: dateFormat,
+                changeYear: true,
+                changeMonth: true,
+                yearRange: "-100:+0",
+                maxDate: "0",
+                onClose: function (selectedDate) {
+                    if (selectedDate) {
+                        $("#endDate").datepicker("option", "minDate", selectedDate);
+                    } else {
+                        $("#endDate").datepicker("option", "minDate", null);
+                    }
+                    $("#endDate").datepicker("setDate", null);
+                }
+            }).datepicker("setDate", today);
+
+            $("#endDate").datepicker({
+                dateFormat: dateFormat,
+                changeYear: true,
+                changeMonth: true,
+                yearRange: "-100:+0",
+                maxDate: "0",
+                onClose: function (selectedDate) {
+                    if (selectedDate) {
+
+                        var endDate = $.datepicker.parseDate(dateFormat, selectedDate);
+
+                        $("#endDate").datepicker("setDate", endDate);
+
+
+                    } else {
+                        $("#endDate").val("");
+
+                    }
+                }
+            }).datepicker("setDate", today);
+
+        });
+    </script>
+

@@ -6,6 +6,7 @@
 
 using SMS.Model.Student;
 using SMS.ViewModel.RepositoyResponse;
+using SMS.ViewModel.Student;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +25,7 @@ namespace SMS.BL.Student.Interface
         /// <param name="isEnable"></param>
         /// <param name="totalPage"></param>
         /// <returns></returns>
-        RepositoryResponse<IEnumerable<StudentBO>>GetAllStudents(int pageNo, int pageSize, bool? isEnable, out int totalPage);
+        RepositoryResponse<IEnumerable<StudentBO>>GetAllStudents(StudentViewModel studentModel);
 
         /// <summary>
         /// Get one student details by it's id
@@ -45,7 +46,7 @@ namespace SMS.BL.Student.Interface
         /// </summary>
         /// <param name="student"></param>
         /// <returns></returns>
-        RepositoryResponse<bool> SaveStudent(StudentBO student);
+        RepositoryResponse<bool> UpsertStudent(StudentBO student);
 
         /// <summary>
         /// To handle enable disable button
@@ -68,7 +69,7 @@ namespace SMS.BL.Student.Interface
         /// <param name="item"></param>
         /// <param name="criteria"></param>
         /// <returns></returns>
-        RepositoryResponse<IEnumerable<StudentBO>> GetSearchStudents(string item, string criteria);
+        RepositoryResponse<IEnumerable<StudentBO>> GetSearchStudents(StudentSearchViewModel searchStudentModel);
 
 
         /// <summary>

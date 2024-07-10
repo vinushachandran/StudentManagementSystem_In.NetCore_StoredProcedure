@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SMS.Model.NLog;
 using SMS.Model.Student;
 using System;
 using System.Collections.Generic;
@@ -16,5 +17,13 @@ namespace SMS.Data
 		}
 
 		public DbSet<StudentBO> Students { get; set; }
+
+		public DbSet<NLogBO> NLogs { get; set;}
+
+		
+
+
+
+
 	}
 }
