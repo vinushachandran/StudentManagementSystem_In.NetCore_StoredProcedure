@@ -1,0 +1,16 @@
+﻿@model SMS.ViewModel.Teacher.TeacherViewModel
+
+<div class="teacher-details">
+    <h3>Teacher Details</h3>
+    <p><strong>Teacher ID:</strong> @Model.TeacherDetail.TeacherID</p>
+    <p><strong>First Name:</strong> @Model.TeacherDetail.FirstName</p>
+    <p><strong>Middle Name:</strong> @Model.TeacherDetail.MiddleName</p>
+    <p><strong>Last Name:</strong> @Model.TeacherDetail.LastName</p>
+    <p><strong>Display Name:</strong> @Model.TeacherDetail.DisplayName</p>
+    <p><strong>Email:</strong> @Model.TeacherDetail.Email</p>
+    <p><strong>Gender:</strong> @Model.TeacherDetail.Gender</p>
+    <p><strong>DOB:</strong> @String.Format("{0:" + SMS.Common.DateFormat.defaultDateFormat + "}", @Model.TeacherDetail.DOB)</p>
+    <p><strong>Address:</strong> @Model.TeacherDetail.Address</p>
+    <p><strong>Contact Number:</strong> @Model.TeacherDetail.ContactNo</p>
+    <p><strong>Enabled:</strong> @Model.TeacherDetail.IsEnable</p>
+</div>

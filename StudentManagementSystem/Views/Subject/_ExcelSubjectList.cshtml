@@ -1,0 +1,22 @@
+﻿@model SMS.ViewModel.Subject.SubjectViewModel
+
+<h2>Subject List</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Subject Code</th>
+            <th>Subject Name</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var subject in Model.Subjects)
+        {
+            <tr>
+                <td>@subject.SubjectCode</td>
+                <td>@subject.Name</td>
+                <td>@(subject.IsEnable ? "Enabled" : "Disabled")</td>
+            </tr>
+        }
+    </tbody>
+</table>

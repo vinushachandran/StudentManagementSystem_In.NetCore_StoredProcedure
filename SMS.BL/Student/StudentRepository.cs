@@ -66,8 +66,13 @@ namespace SMS.BL.Student
 				response.Message.Add(string.Format(StaticData.NO_DATA_FOUND,"Student"));
 			}
 
+            if (totalPageParam.Value != null)
+            {
+                response.TotalPages = (int)totalPageParam.Value;
+            }
 
-            response.TotalPages = (int)totalPageParam.Value;
+
+            
 
             return response;
         }

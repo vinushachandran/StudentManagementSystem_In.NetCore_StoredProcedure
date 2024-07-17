@@ -133,6 +133,8 @@ function previousData() {
     }
 }
 
+
+
 async function loadData(pageNumber, pageSize) {
     var data;
     function formatDate(dateString) {
@@ -194,23 +196,9 @@ async function loadData(pageNumber, pageSize) {
     }
 }
 
-function showStudentDetails(studentId) {
-    $.ajax({
-        url: '/Student/GetStudentDetails/' + studentId,
-        type: 'GET',
-        success: function (data) {
-            $('#studentDetailsContainer').html(data);
-            
-           
-        },
-        error: function () {
-            alert('Error loading student details.');
-        }
-    });
-}
 
-// Function to show student details popup
-// Function to show student details popup
+
+ /*Function to show student details popup*/
 function showStudentDetails(studentId) {
     $.ajax({
         url: '/Student/GetStudentDetails/' + studentId,
@@ -398,17 +386,15 @@ function updatePagination(currentPage, totalPage) {
     }
 }
 
-
+//download as excel file
 function downloadExcel() {
-    // Make an AJAX request to the server to download Excel file
     $.ajax({
         url: '/Student/DownloadExcel',
         type: 'GET',
         xhrFields: {
-            responseType: 'blob' // Set the AJAX response type to blob
+            responseType: 'blob' 
         },
         success: function (blob) {
-            // On success, create a temporary anchor element to trigger download
             var url = window.URL.createObjectURL(blob);
             var anchor = document.createElement('a');
             anchor.href = url;
@@ -422,7 +408,7 @@ function downloadExcel() {
         },
         error: function (error) {
             console.error('Error downloading Excel file:', error);
-            // Handle error if necessary
+            
         }
     });
 }

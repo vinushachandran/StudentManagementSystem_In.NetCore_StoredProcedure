@@ -1,0 +1,118 @@
+﻿@model SMS.ViewModel.Allocations.AllocationViewModel
+
+<style>
+    .studentAllocationTableHeader {
+        background-color: #E6E6FA;
+        padding: 40px;
+    }
+</style>
+
+
+
+@if (Model != null && Model.StudentAllocationList.Any())
+{
+    foreach (var student in Model.StudentAllocationList)
+    {
+        <div class="card mb-3 card-body">
+            <div class="card-header studentAllocationcardHeader">
+                <div class="bg-light">
+                    <strong>Student - </strong>@student.StudentName  (@student.StudentRegNo)
+                </div>
+                <div>
+                    @if (student.IsEnable)
+                    {
+                        <button type="button" class="btn btn-success" onclick="toggleEnable('@student.StudentID', false, '@student.StudentName')">
+                            <i class="bi bi-toggle-on"></i>
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-danger" onclick="toggleEnable('@student.StudentID', true, '@student.StudentName')">
+                            <i class="bi bi-toggle-off"></i>
+                        </button>
+                    }
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <table class="table table-bordered studentAllocationTable">
+                            <thead>
+                                <tr class="studentAllocationTableHeader">                                    
+                                    <th>Subject</th>
+                                    <th>Teacher</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            @foreach (var subject in student.StudentAllocations)
+                            {
+                                <tbody>
+                                    <tr>
+                                        <td class="align-middle">
+                                            <p><strong>@subject.SubjectName </strong> (Subject Code: @subject.SubjectCode</p>
+                                        </td>
+                                        <td class="align-middle">
+                                            @foreach (var teacher in @subject.SubjectAllocation)
+                                            {
+                                                <p><strong>@teacher.TeacherName </strong> (Teacher RegNo: @teacher.TeacherRegNo)</p>
+                                            }
+                                        </td>
+                                        <td class="align-middle">
+                                            @foreach (var teacher in @subject.SubjectAllocation)
+                                            {
+                                                <p>
+                                                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteStudentAllocation(@teacher.StudentAllocationID)"><i class="bi bi-trash small-icons"></i></button>
+                                                </p>
+                                            }
+
+                                        </td>
+                                    </tr>
+
+                                </tbody>
+
+
+                            }
+                            @* <tbody>
+                                @foreach (var subject in student.SubjectAllocationGroupBySubject)
+                                {
+                                    int subjectCount = student.SubjectAllocationGroupBySubject.Count();
+                                    bool isFirstRow = true;
+
+                                    foreach (var teacher in subject.SubjectAllocation)
+                                    {
+                                        <tr>
+                                            @if (isFirstRow)
+                                            {
+                                                <td rowspan="@subjectCount" class="align-middle Teacher-grp">@subject.SubjectName (@subject.SubjectCode)</td>
+                                                isFirstRow = false;
+                                            }
+
+                                            <td>@teacher.TeacherName (@teacher.TeacherRegNo)</td>
+
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteStudentAllocation(@teacher.StudentAllocationID)">
+                                                    <i class="bi bi-trash small-icons"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+
+
+                            </tbody> *@
+                        </table>
+
+                       
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="alert alert-warning" role="alert">
+        No data found.
+    </div>
+}

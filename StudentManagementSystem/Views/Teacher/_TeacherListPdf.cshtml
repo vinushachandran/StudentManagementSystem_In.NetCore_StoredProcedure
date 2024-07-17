@@ -1,0 +1,54 @@
+﻿@model SMS.ViewModel.Teacher.TeacherViewModel
+
+@{
+    Layout = null;
+}
+
+<head>
+    <link rel="stylesheet" href="~/css/pdf.css" asp-append-version="true" />
+</head>
+
+<div>
+    <h1>Teacher List</h1>
+
+    <table id="teacherDetails" class="table table-bordered table-striped">
+        @if (Model != null && Model.Teachers.Any())
+        {
+            <thead class="tableheading text-center">
+                <tr>
+                    <th id="sorting">@Html.DisplayNameFor(model => model.Teachers.First().TeacherID)</th>
+                    <th id="sorting">@Html.DisplayNameFor(model => model.Teachers.First().DisplayName)</th>
+                    <th id="sorting">@Html.DisplayNameFor(model => model.Teachers.First().Email)</th>
+                    <th>@Html.DisplayNameFor(model => model.Teachers.First().Gender)</th>
+                    <th id="sorting">@Html.DisplayNameFor(model => model.Teachers.First().DOB)</th>
+                    <th id="sorting">@Html.DisplayNameFor(model => model.Teachers.First().Address)</th>
+                    <th id="sorting">@Html.DisplayNameFor(model => model.Teachers.First().ContactNo)</th>
+                    <th>@Html.DisplayNameFor(model => model.Teachers.First().IsEnable)</th>
+                </tr>
+            </thead>
+            <tbody class="text-center" id="tableBody">
+                @foreach (var item in Model.Teachers)
+                {
+                    <tr>
+                        <td>@item.TeacherID</td>
+                        <td>@item.DisplayName</td>
+                        <td>@item.Email</td>
+                        <td>@item.Gender</td>
+                        <td>@String.Format("{0:" + SMS.Common.DateFormat.defaultDateFormat + "}", item.DOB)</td>
+                        <td>@item.Address</td>
+                        <td>@item.ContactNo</td>
+                        <td>@(item.IsEnable ? "Enabled" : "Disabled")</td>
+                    </tr>
+                }
+            </tbody>
+        }
+        else
+        {
+            <tbody>
+                <tr>
+                    <td colspan="8" class="text-center">No data found</td>
+                </tr>
+            </tbody>
+        }
+    </table>
+</div>

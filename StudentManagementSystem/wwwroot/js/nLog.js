@@ -1,44 +1,6 @@
 ﻿$(document).ready(function () { 
     
-    //var today = new Date();
-    //$("#startDate").datepicker({
-    //    /*dateFormat: "dd-mm-yy",*/
-    //    changeYear: true,
-    //    changeMonth: true,
-    //    yearRange: "-100:+0",
-    //    maxDate: "0",
-    //    onClose: function (selectedDate) {
-    //        if (selectedDate) {
-    //            $("#endDate").datepicker("option", "minDate", selectedDate);
-    //        } else {
-    //            $("#endDate").datepicker("option", "minDate", null);
-    //        }
-    //        $("#endDate").datepicker("setDate", null);
-    //    }
-    //}).datepicker("setDate", today);
-
-    //$("#endDate").datepicker({
-    //    /*dateFormat: "dd-mm-yy",*/
-    //    changeYear: true,
-    //    changeMonth: true,
-    //    yearRange: "-100:+0",
-    //    maxDate: "0",
-    //    onClose: function (selectedDate) {
-    //        if (selectedDate) {
-
-    //           /* var endDate = $.datepicker.parseDate("dd-dd-yy", selectedDate);*/
-               
-    //            $("#endDate").datepicker("setDate", endDate);
-
-
-    //        } else {
-    //            $("#endDate").val("");
-
-    //        }
-    //    }
-    //}).datepicker("setDate", today);
-
-    
+        
     // Event handlers for filters based on date
     $('#startDate').change(function () {
        
@@ -68,9 +30,7 @@
     });
 
 
-    $('#filteredChartModal').on('shown.bs.modal', function () {
-        drawFiterChart();
-    });
+    
 
     
     loadNlogLoist();
@@ -80,7 +40,8 @@ google.charts.load('current', { 'packages': ['corechart'] });
 google.charts.setOnLoadCallback(function () {
     drawChart();
     drawColumnChart();
-    /*drawFiterChart();*/
+    drawDailyChart();
+    
 });
 function loadNlogLoist() {
     var form = $('#logFilterForm');
@@ -125,13 +86,7 @@ function filterByDateLog() {
 }
 
 
-//function downloadPdf() {
-//    var form = $('#logFilterForm');
-//    $.ajax({
-//        url: '/NLog/DownloadPdf'
-//        data: form.serialize(),
-//    });
-//}
+
 
 function downloadPdf() {
     var form = $('#logFilterForm');
@@ -181,7 +136,7 @@ function drawChart() {
         data: form.serialize(),
         dataType: 'json', 
         success: function (data) {
-            console.log(data)
+            
             if (data.success) {
                 var chartData = [
                     ['Log Level', 'Count'],
@@ -227,20 +182,24 @@ function drawChart() {
 
 function drawColumnChart() {
     $.ajax({
-        url: '/NLog/GetLogCountsByMonth',
+        url: '/NLog/GetDailyLogCounts',
         method: 'GET',
         success: function (response) {
             if (response.success) {
                 var logCounts = response.data;
+               
                 var data = new google.visualization.DataTable();
                 data.addColumn('string', 'Month');
                 data.addColumn('number', 'Info');
                 data.addColumn('number', 'Warn');
                 data.addColumn('number', 'Error');
 
-                data.addRows([
-                    [logCounts.monthName, logCounts.infoCount, logCounts.warnCount, logCounts.errorCount]
-                ]);
+                for (const item of logCounts) {
+                    data.addRows([
+                        [item.month, item.infoCount, item.warningCount, item.errorCount]
+                    ]);
+                }
+
 
                 var options = {
                     title: 'Log Counts by Month',
@@ -288,118 +247,69 @@ function drawColumnChart() {
 
 
 
-//function drawFiterChart() {
-//    $.ajax({
-//        url: '/NLog/FilterLogsByDate',
-//        type: 'GET',
-//        dataType: 'json',
-//        success: function (response) {
-//            console.log(response);
-//            if (response.success) {
-//                var logCounts = response.data;
-//                var data = new google.visualization.DataTable();
-//                data.addColumn('string', 'Month');
-//                data.addColumn('number', 'Info');
-//                data.addColumn('number', 'Warn');
-//                data.addColumn('number', 'Error');
-
-//                data.addRows([
-//                    [logCounts.monthName, logCounts.infoCount, logCounts.warnCount, logCounts.errorCount]
-//                ]);
-
-//                var options = {
-//                    title: 'Log Counts by Month',
-//                    hAxis: {
-//                        title: 'Month',
-//                    },
-//                    vAxis: {
-//                        title: 'Log Count'
-//                    },
-//                    height: 450,
-//                    width: 550,
-//                    chartArea: {
-//                        width: '70%',
-//                        height: '75%'
-//                    },
-//                    titleTextStyle: {
-//                        fontSize: 20,
-//                        bold: true
-//                    }
-//                };
-
-//                var chart = new google.visualization.ColumnChart(
-//                    document.getElementById('columnchart'));
-
-//                chart.draw(data, options);
 
 
-//                $('#downloadcolumnPdfButton').off('click').on('click', function () {
-//                    html2canvas(document.getElementById('columnchart')).then(canvas => {
-//                        var imgData = canvas.toDataURL('image/png');
-//                        var pdf = new jspdf.jsPDF();
-//                        pdf.addImage(imgData, 'PNG', 15, 40, 180, 160);
-//                        pdf.save('column-chart.pdf');
-//                    });
-//                });
-//            } else {
-                
-//            }
-            
-//        },
-//        error: function (xhr, textStatus, errorThrown) {
-//            console.error('XHR Error:', errorThrown);
-//            Swal.fire({
-//                icon: 'error',
-//                title: 'XHR Error',
-//                text: 'An error occurred while fetching data.'
-//            });
-//        }
-//    });
-//}
+function drawDailyChart() {
+    var form = $('#logFilterForm');
+    $.ajax({
+        url: '/NLog/GetDailyLogCounts',
+        type: 'GET',
+        data: form.serialize(),
+        dataType: 'json',
+        success: function (data) {
+            if (data.success) {
+                var lineChartData = [];
+                for (const item of data.data) {
+                    lineChartData.push([
+                        item.month,
+                        item.infoCount,
+                        item.errorCount,
+                        item.warningCount
+                    ]);
+                }
 
-//function drawDailyChart() {
-//    var data = new google.visualization.DataTable();
-//    data.addColumn('date', 'Day');
-//    data.addColumn('number', 'Info');
-//    data.addColumn('number', 'Warn');
-//    data.addColumn('number', 'Error');
+                var lineData = google.visualization.arrayToDataTable([
+                    ['Month', 'Information Count', 'Error Count', 'Warning Count'],
+                    ...lineChartData
+                ]);
 
-//    // Fetch data using AJAX
-//    $.ajax({
-//        url: '@Url.Action("GetDailyLogCounts", "Logs")',
-//        type: 'POST',
-//        data: $("#filterForm").serialize(),
-//        success: function (result) {
-//            var rows = [];
-//            result.forEach(function (item) {
-//                rows.push([new Date(item.LogDate), item.InfoCount, item.WarnCount, item.ErrorCount]);
-//            });
-//            data.addRows(rows);
+                var options = {
+                    title: 'Log Information',
+                    curveType: 'function',
+                    hAxis: {
+                        title: 'Month'
+                    },
+                    vAxis: {
+                        title: 'Count'
+                    },
+                    height: 450,
+                    width: 500,
+                    legend: { position: 'bottom' },
+                    chartArea: {
+                        width: '90%',
+                        height: '60%'
+                    },
+                    titleTextStyle: {
+                        fontSize: 20,
+                        bold: true
+                    }
+                };
 
-//            var options = {
-//                chart: {
-//                    title: 'Daily Log Counts',
-//                    subtitle: 'Counts of Info, Warn, and Error logs per day'
-//                },
-//                width: 800,
-//                height: 500
-//            };
+                var chart = new google.visualization.LineChart(document.getElementById('lineChart'));
+                chart.draw(lineData, options);
 
-//            var chart = new google.charts.Line(document.getElementById('lineChart'));
-//            chart.draw(data, google.charts.Line.convertOptions(options));
+                $('#downloadlinePdfButton').off('click').on('click', function () {
+                    html2canvas(document.getElementById('lineChart')).then(canvas => {
+                        var imgData = canvas.toDataURL('image/png');
+                        var pdf = new jspdf.jsPDF();
+                        pdf.addImage(imgData, 'PNG', 15, 40, 180, 160);
+                        pdf.save('Daily Report.pdf');
+                    });
+                });
+            }
+        }
+    });
+}
 
-//            // Handle PDF download
-//            $("#downloadlinePdfButton").off('click').on('click', function () {
-//                var pdf = new jsPDF();
-//                pdf.text(20, 20, 'Daily Log Counts');
-//                pdf.addImage(chart.getImageURI(), 'PNG', 15, 40, 180, 160);
-//                pdf.save('DailyLogCounts.pdf');
-//            });
-//        },
-//        error: function (error) {
-//            console.log("Error:", error);
-//        }
-//    });
-//}
 
 

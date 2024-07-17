@@ -1,0 +1,117 @@
+﻿@model SMS.Model.Subject.SubjectBO
+
+@{
+    ViewData["Title"] = "Add Subject";
+}
+
+@{
+    var dateFormat = SMS.Common.DateFormat.defaultDateFormat;
+}
+<form id="subjectForm" asp-action="UpsertSubject" asp-controller="Subject" method="post" class="border p-4 mx-auto" style="max-width: 600px;">
+    <input type="hidden" asp-for="SubjectID" value="@(Model.SubjectID??0)" />
+
+    @Html.AntiForgeryToken()
+
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    <div class="justify-content-center align-items-center">
+        <h3 class="text-center">Subjects</h3>
+
+        <div class="form-group row m-2">
+            <div class="col-md-4">
+                @Html.LabelFor(model => model.SubjectCode, htmlAttributes: new { @class = "col-form-label", style = "word-wrap: break-word;" })<span class="required-asterisk text-danger">*</span>
+            </div>
+            <div class="col-md-8">
+                @Html.EditorFor(model => model.SubjectCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Subject Code", id = "SubjectCode" } })
+                <span id="SubjectCode-error" class="text-danger"></span>
+                @Html.ValidationMessageFor(model => model.SubjectCode, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group row m-2">
+            <div class="col-md-4">
+                @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "col-form-label", style = "word-wrap: break-word;" })<span class="required-asterisk text-danger">*</span>
+            </div>
+            <div class="col-md-8">
+                @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control", placeholder = "Subject Name" } })
+                @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+       
+        <div class="form-group row m-2">
+            <div class="col-md-4">
+                @Html.LabelFor(model => model.IsEnable, htmlAttributes: new { @class = "col-form-label" })
+            </div>
+            <div class="col-md-8">
+                <div class="form-check m-3">
+                    @Html.CheckBoxFor(model => model.IsEnable, new { @class = "form-check-input", id = "IsEnable" })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group row m-2">
+            <div class="col-md-10 offset-md-4">
+                <br />
+                <input type="submit" value="@((Model.SubjectID == null ? "Create" : "Update"))" class="btn text-light" style="background-color: #9F2B68" />
+                <a href="#" class="btn btn-secondary" onclick="backSubject()">Back</a>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    $(document).ready(function () {
+        $('#subjectForm').submit(function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: $(this).attr('action'),
+                type: $(this).attr('method'), 
+                data: $(this).serialize(), 
+                success: function (response) {                    
+                    addSubjectSuccess(response);
+                },
+                error: function (xhr, status, error) {                    
+                    addSubjectFailure(xhr);
+                }
+            });
+        });
+    });
+
+    // Check Subject Code already exists
+    $('#SubjectCode').change(function () {
+        var subjectCode = $(this).val();
+        var subjID = $('#SubjectID').val();
+       
+        $.ajax({
+            url: '/Subject/IsSubjectCodeAvailable',
+            type: 'GET',
+            data: { subjectCode: subjectCode, subjectID: subjID },
+            success: function (response) {
+                if (response.isAvailable) {
+                    $('#SubjectCode-error').text('Subject code already exists.');
+                } else {
+                    $('#SubjectCode-error').text('');
+                }
+            }
+        });
+    });
+
+    // Check Subject Name already exists
+    $('#Name').change(function () {
+        var subjectName = $(this).val();
+        var subjID = $('#SubjectID').val();
+        $.ajax({
+            url: '/Subject/IsSubjectNameAvailable',
+            type: 'GET',
+            data: { subjectName: subjectName, subjID: subjID },
+            success: function (response) {
+                if (response.isAvailable) {
+                    $('#Name-error').text('Subject name already exists.');
+                } else {
+                    $('#Name-error').text('');
+                }
+            }
+        });
+    });
+</script>

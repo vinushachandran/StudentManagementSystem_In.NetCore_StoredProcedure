@@ -1,0 +1,91 @@
+﻿@model SMS.ViewModel.Subject.SubjectViewModel
+<table id="subjectDetails" class="table table-bordered table-striped">
+    @if (Model != null)
+    {
+        <thead class="tableheading text-center">
+            <tr>
+                <th id="sorting">@Html.DisplayNameFor(model => model.Subjects.First().SubjectCode)</th>
+                <th id="sorting">@Html.DisplayNameFor(model => model.Subjects.First().Name)</th>
+                <th>@Html.DisplayNameFor(model => model.Subjects.First().IsEnable)</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        if (Model.Subjects.Any())
+        {
+            <tbody class="text-center" id="tableBody">
+                @foreach (var item in Model.Subjects)
+                {
+                    var enableButton = item.IsEnable
+                    ? $"<button type='button' class='btn btn-success' onclick=\"toggleEnable('{item.SubjectID}', false, '{item.Name}')\"><i class='bi bi-toggle-on'></i></button>"
+                    : $"<button type='button' class='btn btn-danger' onclick=\"toggleEnable('{item.SubjectID}', true, '{item.Name}')\"><i class='bi bi-toggle-off'></i></button>";
+
+                    var id = item.SubjectID;
+
+                    <tr>
+                        <td>@item.SubjectCode</td>
+                        <td>@item.Name</td>
+                        <td>@Html.Raw(enableButton)</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-primary" id="editBtn_@item.SubjectID" onclick="editSubject('@item.SubjectID')"><i class='bi bi-pencil-fill'></i></button>
+                            <button type="button" class="btn btn-sm btn-danger" id="deleteBtn_@item.SubjectID" onclick="deleteSubject('@item.SubjectID',false,'@item.Name')"><i class="bi bi-trash"></i></button>
+                            <span id="allocated_@item.SubjectID" class='btn btn-primary'>Allocated</span>
+                            
+                        </td>
+                    </tr>
+
+                    <script>
+                       
+                        $.ajax({
+                            url: '/Subject/IsSubjectAllocated',
+                            type: 'GET',
+                            data: { id: '@item.SubjectID' },
+                            success: function (response) {
+                                if (response.isAllocated) {
+                                    $('#editBtn_@item.SubjectID, #deleteBtn_@item.SubjectID').hide();
+                                    $('#allocated_@item.SubjectID').show();
+                                } else {
+                                    $('#allocated_@item.SubjectID').hide();
+                                }
+                            }
+                        });
+                       
+                    </script>
+                }
+            </tbody>
+            <tr>
+                <td colspan="4" class="text-center">Page @Html.Raw(Model.PageNumber) of @Html.Raw(Model.TotalPages)</td>
+            </tr>
+
+            <script>
+                var getTotalPage = @Html.Raw(Model.TotalPages);
+            </script>
+        }
+        else
+        {
+            <tr>
+                <td colspan="4" class="text-center">No data found</td>
+            </tr>
+        }
+    }
+</table>
+
+
+<!-- To handle pagination -->
+<div class="container-fluid">
+    <nav aria-label="Page navigation">
+        <ul class="pagination pagination-container">
+            <li class="page-item mr-auto" id="prevButton">
+                <a class="page-link" href="#" aria-label="Previous" onclick="previousData()">
+                    <span aria-hidden="true">&laquo;</span>
+                    <span class="sr-only">Previous</span>
+                </a>
+            </li>
+            <li class="page-item ml-auto" id="nextButton">
+                <a class="page-link" href="#" aria-label="Next" onclick="nextData()">
+                    <span aria-hidden="true">&raquo;</span>
+                    <span class="sr-only">Next</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>

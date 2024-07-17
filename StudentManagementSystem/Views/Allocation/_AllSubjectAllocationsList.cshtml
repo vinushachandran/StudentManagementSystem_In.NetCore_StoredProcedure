@@ -1,0 +1,55 @@
+﻿@model SMS.ViewModel.Allocations.AllocationViewModel
+
+<div class="container ">
+    @if (Model != null)
+    {
+        if(Model.SubjectAllocations.Any())
+        {
+            foreach (var item in Model.SubjectAllocations)
+            {
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h3>Subject</h3> @item.SubjectName (@item.SubjectCode)
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h3>Teachers</h3>
+                                @foreach (var teacher in item.SubjectAllocation)
+                                {
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="me-auto">
+                                            <p class="mb-0"><strong>@teacher.TeacherName</strong> (@teacher.TeacherRegNo)</p>
+                                        </div>
+                                        <div class="ms-3">
+                                            <button type="button" class="btn btn-sm btn-primary" id="editBtn_@teacher.SubjectAllocationID" onclick="editTeacherSubjectAllocation(@teacher.SubjectAllocationID)"><i class="bi bi-pencil-fill"></i></button>
+                                            <button type="button" class="btn btn-sm btn-danger" id="deleteBtn_@teacher.SubjectAllocationID" onclick="deleteTeacherSubjectAllocation(@teacher.SubjectAllocationID)"><i class="bi bi-trash"></i></button>
+                                            <span id="allocated_@teacher.SubjectAllocationID" class='btn btn-primary'>Allocated</span>
+                                            <script>
+                                                $.ajax({
+                                                    url: '/Allocation/IsSubjectAllocationInUse',
+                                                    data: { id: '@teacher.SubjectAllocationID' },
+                                                    success: function (response) {
+                                                        if (response.isAllocated) {
+                                                            $('#editBtn_@teacher.SubjectAllocationID,#deleteBtn_@teacher.SubjectAllocationID').hide();
+                                                            $('#allocated_@teacher.SubjectAllocationID').show();
+                                                        }
+                                                        else {
+                                                            $('#allocated_@teacher.SubjectAllocationID').hide();
+                                                        }
+                                                        
+
+                                                    },
+                                                });
+                                            </script>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    }
+</div>

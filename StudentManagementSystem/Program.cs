@@ -9,6 +9,12 @@ using SMS.BL.NLog.Interface;
 using SMS.BL.NLog;
 using Rotativa.AspNetCore;
 using SMS.Common;
+using SMS.BL.Teacher.Interface;
+using SMS.BL.Teacher;
+using SMS.BL.Subject.Interface;
+using SMS.BL.Subject;
+using SMS.BL.Allocation.Interface;
+using SMS.BL.Allocation;
 
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 try
@@ -30,8 +36,10 @@ try
     // Add services to the container
     builder.Services.AddControllersWithViews();
     builder.Services.AddScoped<IStudentRepository, StudentRepository>();
+    builder.Services.AddScoped<ITeacherRepository, TeacherRepository>();
     builder.Services.AddScoped<INLogRepository, NlogRepository>();
-
+    builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
+    builder.Services.AddScoped<IAllocationRepository, AllocationRepository>();
 
 
     // Add NLog to ASP.NET Core

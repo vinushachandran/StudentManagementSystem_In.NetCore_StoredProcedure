@@ -1,0 +1,44 @@
+﻿@model SMS.ViewModel.Subject.SubjectViewModel
+
+@{
+    Layout = null;
+}
+
+<head>
+    <link rel="stylesheet" href="~/css/pdf.css" asp-append-version="true" />
+</head>
+
+<div>
+    <h1>Subject List</h1>
+
+    <table id="subjectDetails" class="table table-bordered table-striped">
+        @if (Model != null && Model.Subjects.Any())
+        {
+            <thead class="tableheading text-center">
+                <tr>
+                    <th>@Html.DisplayNameFor(model => model.Subjects.First().SubjectCode)</th>
+                    <th>@Html.DisplayNameFor(model => model.Subjects.First().Name)</th>
+                    <th>@Html.DisplayNameFor(model => model.Subjects.First().IsEnable)</th>
+                </tr>
+            </thead>
+            <tbody class="text-center" id="tableBody">
+                @foreach (var subject in Model.Subjects)
+                {
+                    <tr>
+                        <td>@subject.SubjectCode</td>
+                        <td>@subject.Name</td>
+                        <td>@(subject.IsEnable ? "Active" : "Inactive")</td>
+                    </tr>
+                }
+            </tbody>
+        }
+        else
+        {
+            <tbody>
+                <tr>
+                    <td colspan="5" class="text-center">No subjects found</td>
+                </tr>
+            </tbody>
+        }
+    </table>
+</div>

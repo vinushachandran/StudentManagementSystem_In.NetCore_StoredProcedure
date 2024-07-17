@@ -9,9 +9,17 @@ namespace SMS.ViewModel.Nlog
 {
     public class LogLevelCountsViewModel
     {
-        public LogCountBO LogCounts { get; set; }
+        public int InfoCount { get; set; }
 
-        
+        public int WarningCount { get; set; }
+
+        public int ErrorCount { get; set; }
+
+        public string Month { get; set; }
+
+        public string Day { get; set; }
+
+
 
     }
 }

@@ -1,18 +1,23 @@
-﻿//using SMS.Model.NLog;
-//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
+﻿using Microsoft.VisualBasic;
+using SMS.Model.NLog;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-//namespace SMS.ViewModel.Nlog
-//{
-//    public class NLogViewModel
-//    {
-//        public IEnumerable<NLogBO> NlogList { get; set; }
+namespace SMS.ViewModel.Nlog
+{
+    public class NLogViewModel
+    {
+        public IEnumerable<NLogBO> NlogList { get; set; }
 
-//        public NLogDateFilterViewModel DateFilterViewModel { get; set; }
+        public DateTime StartDate { get; set; } = DateTime.Today;
 
+        public DateTime EndDate { get; set; } = DateTime.Today;
 
-//    }
-//}
+        public string? Level { get; set; }
+
+        
+    }
+}

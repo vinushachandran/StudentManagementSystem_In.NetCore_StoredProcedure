@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure;
+using Microsoft.AspNetCore.Mvc;
 using Rotativa.AspNetCore;
 using SMS.BL.NLog.Interface;
 using SMS.BL.Student;
@@ -26,7 +27,8 @@ namespace StudentManagementSystem.Controllers
 
         public IActionResult Index()
         {
-            NLogDateFilterViewModel model = new NLogDateFilterViewModel();
+            
+            NLogViewModel model = new NLogViewModel();
             return View(model);
         }
         /// <summary>
@@ -34,7 +36,7 @@ namespace StudentManagementSystem.Controllers
         /// </summary>
         /// <param name="nLogModel"></param>
         /// <returns></returns>
-        public IActionResult DisplayAllNLogs(NLogDateFilterViewModel nLogModel)
+        public IActionResult DisplayAllNLogs(NLogViewModel nLogModel)
         {
 
             try
@@ -42,7 +44,7 @@ namespace StudentManagementSystem.Controllers
 
                 var response = _logRepository.GetAllNLogs(nLogModel);
 
-                var nLogViewModel = new NLogDateFilterViewModel
+                var nLogViewModel = new NLogViewModel
                 {
                     NlogList = response.Data
                 };
@@ -67,56 +69,7 @@ namespace StudentManagementSystem.Controllers
 
         }
 
-        /// <summary>
-        /// Filtering log data based on date
-        /// </summary>
-        /// <param name="dateFilterViewModel"></param>
-        /// <returns></returns>
-        [HttpGet]
-        public IActionResult FilterLogsByDate(NLogDateFilterViewModel dateFilterViewModel)
-        {
-            try
-            {
-                if (dateFilterViewModel.EndDate < dateFilterViewModel.StartDate)
-                {
-                    var errorResponse = new
-                    {
-                        success = false,
-                        message = "End date must be greater than or equal to start date."
-                    };
-                    return new JsonResult(errorResponse);
-                }
-
-                var response = _logRepository.GetLogsByDateRange(dateFilterViewModel);
-
-                var nLogViewModel = new NLogDateFilterViewModel
-                {
-                    NlogList = response.Data,
-                    
-                };
-
-                if (response.Success && nLogViewModel.NlogList != null && nLogViewModel.NlogList.Any())
-                {
-                    _logger.LogInformation(string.Join(", ", response.Message));
-                    return PartialView("_NLogList", nLogViewModel);
-                }
-                else
-                {
-                    _logger.LogWarning("No filtered NLogs found.");
-                    var errorResponse = new
-                    {
-                        success = false,
-                        messages = response.Message
-                    };
-                    return new JsonResult(errorResponse);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving filtered NLog data");
-                return Json(new { success = false, message = "Error retrieving filtered NLog data", error = ex.Message });
-            }
-        }
+      
         /// <summary>
         /// Filterting data based on log level
         /// </summary>
@@ -129,7 +82,7 @@ namespace StudentManagementSystem.Controllers
             try
             {
                 RepositoryResponse<IEnumerable<NLogBO>> response;
-                var nlogviewModel = new NLogDateFilterViewModel();
+                var nlogviewModel = new NLogViewModel();
 
                 if (string.IsNullOrEmpty(level))
                 {
@@ -140,7 +93,7 @@ namespace StudentManagementSystem.Controllers
                     response = _logRepository.GetLogsByLevel(level);
                 }
 
-                var nLogViewModel = new NLogDateFilterViewModel
+                var nLogViewModel = new NLogViewModel
                 {
                     NlogList = response.Data
                 };
@@ -174,7 +127,7 @@ namespace StudentManagementSystem.Controllers
         /// </summary>
         /// <param name="dateFilterViewModel"></param>
         /// <returns></returns>
-        public IActionResult GetLogLevelData(NLogDateFilterViewModel dateFilterViewModel)
+        public IActionResult GetLogLevelData(NLogViewModel dateFilterViewModel)
         {
             var errorResponse = new ErrorResponse();
             try
@@ -240,13 +193,13 @@ namespace StudentManagementSystem.Controllers
 
 
 
-        public IActionResult DownloadPdf(NLogDateFilterViewModel logViewModel)
+        public IActionResult DownloadPdf(NLogViewModel logViewModel)
         {
             try
             {
                 var response = _logRepository.GetAllNLogs(logViewModel);
 
-                var nLogViewModel = new NLogDateFilterViewModel
+                var nLogViewModel = new NLogViewModel
                 {
                     NlogList = response.Data
                 };
@@ -266,26 +219,26 @@ namespace StudentManagementSystem.Controllers
             }
         }
 
-        //[HttpPost]
-        //public IActionResult GetDailyLogCounts(NLogDateFilterViewModel dateFilterViewModel)
-        //{
-        //    var response = _logRepository.GetDailyLogCountsByFilter(dateFilterViewModel);
+        
+        public IActionResult GetDailyLogCounts(NLogViewModel nLogViewModel)
+        {
+            try
+            {
+                var response = _logRepository.GetLogLevelCountByDay(nLogViewModel);
 
-        //    if (!response.Success)
-        //    {
-        //        return BadRequest(response.Message);
-        //    }
+                return Json(new {success=true,data=response.Data});
 
-        //    var data = response.Data.Select(d => new
-        //    {
-        //        d.LogDate,
-        //        d.InfoCount,
-        //        d.WarnCount,
-        //        d.ErrorCount
-        //    }).ToList();
+                
 
-        //    return Json(data);
-        //}
+            }
+
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving log counts by month");
+                return Json(new { success = false, message = "Error retrieving log counts by month", error = ex.Message });
+            }
+
+        }
 
 
     }

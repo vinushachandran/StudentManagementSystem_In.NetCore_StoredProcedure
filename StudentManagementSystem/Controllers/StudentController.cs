@@ -21,6 +21,10 @@ using SMS.ViewModel.StaticData;
 using SMS.ViewModel.Student;
 using ClosedXML.Excel;
 using Rotativa.AspNetCore;
+using HtmlAgilityPack;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using System.Data;
 
 
 namespace StudentManagementSystem.Controllers
@@ -29,15 +33,17 @@ namespace StudentManagementSystem.Controllers
     {
 		IStudentRepository _studentRepository;
         INLogRepository _logRepository;
+        private readonly ICompositeViewEngine _viewEngine;
         private readonly ILogger<StudentController> _logger;
 
         ErrorResponse errorResponse=new ErrorResponse();
 		
-        public StudentController(IStudentRepository studentRepository,INLogRepository nLogRepository, ILogger<StudentController> logger)
+        public StudentController(IStudentRepository studentRepository,INLogRepository nLogRepository, ICompositeViewEngine viewEngine, ILogger<StudentController> logger)
         {
             _studentRepository = studentRepository;
             _logRepository = nLogRepository;
             _logger = logger;
+            _viewEngine = viewEngine;
         }
 
         // GET: Student
@@ -138,7 +144,11 @@ namespace StudentManagementSystem.Controllers
 			}
 		}
 
-
+        /// <summary>
+        /// Update or insert student data
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
 		public ActionResult UpsertStudent(long id = 0)
 		{
 			if (id == 0)
@@ -269,6 +279,12 @@ namespace StudentManagementSystem.Controllers
             
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="criteria"></param>
+        /// <returns></returns>
         public IActionResult SearchAutoComplete(string query, string criteria)
         {
             var searchResult = _studentRepository.GetSearchStudents(new StudentSearchViewModel
@@ -352,51 +368,40 @@ namespace StudentManagementSystem.Controllers
         }
 
 
+        /// <summary>
+        /// download student list as excel file
+        /// </summary>
+        /// <returns></returns>
         public IActionResult DownloadExcel()
         {
             try
             {
-                // Set page size to a large number to get all students in one request.
                 var studentModel = new StudentViewModel
                 {
                     PageNumber = 1,
                     PageSize = int.MaxValue
                 };
 
-                // Get all students data using repository method
                 var studentsResponse = _studentRepository.GetAllStudents(studentModel);
 
-                // Check if data retrieval was successful
                 if (studentsResponse.Success)
                 {
+                    var students = studentsResponse.Data.ToList();
+
+                    // Render partial view to string
+                    string htmlString = RenderPartialViewToString("_ExcelStudentList", new StudentViewModel { Students = students });
+
                     // Create Excel workbook and worksheet
                     var workbook = new XLWorkbook();
                     var worksheet = workbook.Worksheets.Add("Students");
 
-                    // Add headers
-                    var headers = new[] { "Registration No", "First Name", "Middle Name", "Last Name", "Display Name", "Email", "Gender", "Date Of Birth", "Address", "Contact No", "Status" };
-                    for (int i = 0; i < headers.Length; i++)
-                    {
-                        worksheet.Cell(1, i + 1).Value = headers[i];
-                    }
+                    // Convert HTML string to DataTable
+                    DataTable dataTable = ConvertHtmlToDataTable(htmlString);
 
-                    // Add data rows
-                    var students = studentsResponse.Data.ToList(); // Convert IEnumerable to List
-                    for (int i = 0; i < students.Count; i++)
-                    {
-                        var student = students[i];
-                        worksheet.Cell(i + 2, 1).Value = student.StudentRegNo;
-                        worksheet.Cell(i + 2, 2).Value = student.FirstName;
-                        worksheet.Cell(i + 2, 3).Value = student.MiddleName;
-                        worksheet.Cell(i + 2, 4).Value = student.LastName;
-                        worksheet.Cell(i + 2, 5).Value = student.DisplayName;
-                        worksheet.Cell(i + 2, 6).Value = student.Email;
-                        worksheet.Cell(i + 2, 7).Value = student.Gender;
-                        worksheet.Cell(i + 2, 8).Value = student.DOB.ToString("yyyy-MM-dd");
-                        worksheet.Cell(i + 2, 9).Value = student.Address;
-                        worksheet.Cell(i + 2, 10).Value = student.ContactNo;
-                        worksheet.Cell(i + 2, 11).Value = student.IsEnable ? "Enabled" : "Disabled";
-                    }
+                   
+
+                    // Add DataTable to worksheet
+                    worksheet.Cell(1, 1).InsertTable(dataTable);
 
                     // Prepare memory stream for Excel file
                     using (var stream = new MemoryStream())
@@ -408,38 +413,98 @@ namespace StudentManagementSystem.Controllers
                 }
                 else
                 {
-                    // Handle case where no data is found or other repository errors
                     TempData["ErrorMessage"] = "Failed to generate Excel file. No data found or error occurred.";
-                    return RedirectToAction("Index"); // Redirect to appropriate action or view
+                    return RedirectToAction("Index");
                 }
             }
             catch (Exception ex)
             {
-                // Log the exception
                 _logger.LogError(ex, "An error occurred while generating the Excel file.");
-
-                // Handle the exception (e.g., show an error message to the user)
                 TempData["ErrorMessage"] = "An error occurred while generating the Excel file.";
                 return RedirectToAction("Index");
             }
         }
 
+        /// <summary>
+        /// Render the partial view to stiring
+        /// </summary>
+        /// <param name="viewName"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        private string RenderPartialViewToString(string viewName, object model)
+        {
+            ViewData.Model = model;
+            using (var sw = new StringWriter())
+            {
+                var viewResult = _viewEngine.FindView(ControllerContext, viewName, false);
+                var viewContext = new ViewContext(ControllerContext, viewResult.View, ViewData, TempData, sw, new HtmlHelperOptions());
+                viewResult.View.RenderAsync(viewContext).Wait();
+                return sw.GetStringBuilder().ToString();
+            }
+        }
+
+        /// <summary>
+        /// Convert html file to data table
+        /// </summary>
+        /// <param name="html"></param>
+        /// <returns></returns>
+        private DataTable ConvertHtmlToDataTable(string html)
+        {
+            var dataTable = new DataTable();
+            var htmlDoc = new HtmlDocument();
+            htmlDoc.LoadHtml(html);
+
+            var headers = htmlDoc.DocumentNode.SelectNodes("//thead/tr/th");
+            foreach (var header in headers)
+            {
+                dataTable.Columns.Add(header.InnerText);
+            }
+
+            var rows = htmlDoc.DocumentNode.SelectNodes("//tbody/tr");
+            foreach (var row in rows)
+            {
+                var dataRow = dataTable.NewRow();
+                var cells = row.SelectNodes("td");
+                for (int i = 0; i < cells.Count; i++)
+                {
+                    dataRow[i] = cells[i].InnerText;
+                }
+                dataTable.Rows.Add(dataRow);
+            }
+
+
+
+            return dataTable;
+        }
+
+        /// <summary>
+        /// Download as pdf
+        /// </summary>
+        /// <param name="studentViewModel"></param>
+        /// <returns></returns>
         public IActionResult DownloadPdf(StudentViewModel studentViewModel)
         {
             try
             {
+               
+                studentViewModel.PageNumber = studentViewModel.PageNumber > 0 ? studentViewModel.PageNumber : 1;
+                studentViewModel.PageSize = studentViewModel.PageSize > 0 ? studentViewModel.PageSize : 10;
+
                 var response = _studentRepository.GetAllStudents(studentViewModel);
 
                 var studentviewmodel = new StudentViewModel
                 {
-                    Students = response.Data
+                    Students = response.Data.ToList(), 
+                    PageNumber = studentViewModel.PageNumber,
+                    PageSize = studentViewModel.PageSize,
+                    TotalPages = response.TotalPages 
                 };
 
                 var pdfContent = new ViewAsPdf("_StudentListPdf", studentviewmodel)
                 {
                     FileName = "StudentList.pdf",
                     PageSize = Rotativa.AspNetCore.Options.Size.A4,
-                    PageOrientation = Rotativa.AspNetCore.Options.Orientation.Portrait,
+                    PageOrientation = Rotativa.AspNetCore.Options.Orientation.Landscape,
                 };
 
                 return pdfContent;
@@ -449,6 +514,7 @@ namespace StudentManagementSystem.Controllers
                 return StatusCode(500, $"Internal Server Error: {ex.Message}");
             }
         }
+
 
     }
 }

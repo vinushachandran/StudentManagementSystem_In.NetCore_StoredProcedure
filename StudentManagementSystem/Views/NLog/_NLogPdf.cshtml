@@ -1,4 +1,4 @@
-﻿@model SMS.ViewModel.Nlog.NLogDateFilterViewModel
+﻿@model SMS.ViewModel.Nlog.NLogViewModel
 
 @{
     Layout = null;
@@ -8,43 +8,48 @@
     <link rel="stylesheet" href="~/css/pdf.css" asp-append-version="true" />
     
 </head>
-
-@if (Model != null && Model.NlogList.Any())
-{
-    <div>
-        <table id="" class="table table-bordered table-striped nlogTable">
-            <thead class="tableheading text-center">
-                <tr>
-                    <th>Date</th>
-                    <th>Level</th>
-                    <th>Logger</th>
-                    <th>Message</th>
-                    <th>Exception</th>
-                </tr>
-            </thead>
-            <tbody class="text-center" id="tableBody">
-                @foreach (var log in Model.NlogList)
-                {
+<div>
+    @if (Model != null && Model.NlogList.Any())
+    {
+        <h1 class="text-center">Log List</h1>
+        <p class="text-center">Date Range: @Model.StartDate.ToString("dd/MM/yyyy") - @Model.EndDate.ToString("dd/MM/yyyy")</p>
+        <div>
+            <table id="" class="table table-bordered table-striped nlogTable">
+                <thead class="tableheading text-center">
                     <tr>
-                        <td>@log.Date</td>
-                        <td>@log.Level</td>
-                        <td>@log.Logger</td>
-                        <td>@log.Message</td>
-                        <td>@(log.Exception ?? "N/A")</td>
+                        <th>Date</th>
+                        <th>Level</th>
+                        <th>Logger</th>
+                        <th>Message</th>
+                        <th>Exception</th>
                     </tr>
-                }
-            </tbody>
+                </thead>
+                <tbody class="text-center" id="tableBody">
+                    @foreach (var log in Model.NlogList)
+                    {
+                        <tr>
+                            <td>@String.Format("{0:" + SMS.Common.DateFormat.defaultDateFormat + " HH:mm:ss tt}", @log.Date)</td>
+                            <td>@log.Level</td>
+                            <td>@log.Logger</td>
+                            <td>@log.Message</td>
+                            <td>@(log.Exception ?? "N/A")</td>
+                        </tr>
+                    }
+                </tbody>
 
-        </table>
-    </div>
+            </table>
+        </div>
 
 
 
-}
-else
-{
-    <p>No log entries found.</p>
-}
+    }
+    else
+    {
+        <p>No log entries found.</p>
+    }
+</div>
+
+
 
 
 

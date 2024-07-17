@@ -1,0 +1,142 @@
+﻿@model SMS.ViewModel.Allocations.AllocationViewModel
+<div class="myTabs">
+    <ul class="nav nav-tabs" id="main-tab" role="tablist">
+        <li class="nav-item allocation-list" role="presentation">
+            <button class="nav-link active" id="first-tab" data-bs-toggle="tab" data-bs-target="#tab-one-content" area-selected="true">Teacher Subject Allocation</button>
+        </li>
+        <li class="nav-item allocation-list" role="presentation">
+            <button class="nav-link" id="second-tab" data-bs-toggle="tab" data-bs-target="#tab-two-content" area-selected="false">Student Subject Teacher Allocation</button>
+        </li>
+    </ul>
+</div>
+<div class="full-body">
+    <div class="container-fluid"> 
+        
+        <div class="tab-content" id="TabContent">
+            @* teacher subject allocation div *@
+            <div class="tab-pane show active allocationContent" id="tab-one-content" role="tabpanel" aria-labelledby="first-tab">
+                <div class="container-fluid mb-5">
+                    <div class="main-heading">
+                        <h2> Teacher Subject Allocation</h2>
+
+
+                    </div>
+
+                </div>
+
+                <div class="panel-heading d-flex align-items-center justify-content-between">
+                    <div class="">
+                        <button id="addNew" class="btn me-3 text-light addNew1">Add New Allocation</button>
+                    </div>
+
+                    <div class="search-wrapper" id="hidable-items1">
+                        <select id="searchCriteria1" class="form-select text-dark me-2">
+                            @* <option value="" selected>All</option> *@
+                            <option value="Subject-name1">Subject Name</option>
+                            <option value="Teacher-name1">Teacher Name</option>
+                            
+
+                        </select>
+                        <input type="text" id="searchQuery1" class="form-control" placeholder="Search...">
+                    </div>
+
+                </div>
+
+
+
+                <div class="card no-border mt-5 " id="teacherSubjectAllocationTable">
+                    <div class="card-body ">
+
+                    </div>
+                </div>
+
+                <div class="addEdit">
+                    <div id="addTeacherSubjectAllocationForm" class="container-fluid" style="display: none;">
+
+                    </div>
+                </div>
+
+                <div id="SubjectSearchResults"></div>
+
+            </div>
+
+            @* Students subject allocation div *@
+            <div class="tab-pane show allocationContent" id="tab-two-content" role="tabpanel" aria-labelledby="second-tab">
+                <div class="panel container-fluid mb-5 " >
+                    <div class="main-heading">
+                        <h2> Student Subject Teacher Allocation</h2>
+
+                    </div>
+                    <div class="panel-heading d-flex align-items-center justify-content-between">
+                        <div>
+                            <button id="addNew" class="btn me-3 text-light addNew2">Add New Allocation</button>
+                        </div>
+                        <div></div>
+                        <div></div>
+                        <div id="enableSelection">
+                            <select id="filterCriteria" class="form-select text-dark">
+                                <option value="" selected>All</option>
+                                <option value="true">Enabled</option>
+                                <option value="false">Disabled</option>
+                            </select>
+                        </div>
+                        <div class="search-wrapper" id="hidable-items">
+                            <select id="searchCriteria" class="form-select text-dark me-2">
+                                <option value="StudentName" selected>Student Name</option>
+                                <option value="SubjectName">Subject Name</option>
+                                <option value="TeacherName">Teacher Name</option>
+
+                            </select>
+                            <input type="text" id="searchQuery" class="form-control" placeholder="Search...">
+                        </div>
+
+                    </div>
+                </div>
+
+           
+
+                <div class="card no-border" id="studentAllocationTableBody">
+                    <h5 class="card-header"></h5>
+                    <div class="card-body">
+                        <h5 class="card-title"></h5>
+                        <p class="card-text"></p>
+                        <a href="#" ></a>
+                    </div>
+                </div>
+
+                <div class="addEdit">
+                    <div id="addStudentAllocationForm" class="container-fluid" style="display: none;">
+
+                    </div>
+                </div>
+
+                <div id="StudentSearchResults"></div>
+
+            </div>
+           
+
+        </div>
+        </div>
+    </div>
+
+
+
+@section Scripts{
+    
+
+
+
+        <script src="~/js/Allocation.js" asp-append-version="true" ></script>
+
+   
+}
+
+
+
+
+
+
+
+
+
+

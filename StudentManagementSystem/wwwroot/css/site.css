@@ -237,6 +237,39 @@ ul.nav.nav-tabs {
     cursor: pointer;
 }
 
+/*Teacher module teacher details popup*/
+.teacher-details-popup {
+    position: fixed;
+    top: 0;
+    right: -25%;
+    width: 25%;
+    height: 100%;
+    background-color: #fff;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+    transition: right 0.3s ease-in-out;
+    z-index: 1000;
+    overflow-y: auto;
+    margin-top: 130px; /* Adjust as needed */
+}
+
+.teacher-details-content {
+    padding: 20px;
+}
+
+.teacher-details-popup.show {
+    right: 0; /* Slide in when shown */
+}
+
+.teacher-details-popup .close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 20px;
+    color: #000;
+    cursor: pointer;
+}
+
+
 /*******NLOg section******/
 .nlog-filter-section {
     display: flex;

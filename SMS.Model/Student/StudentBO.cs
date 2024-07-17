@@ -12,18 +12,18 @@ namespace SMS.Model.Student
 	{
 		[Key]
 		public long? StudentID { get; set; }
-		[Required(ErrorMessage = "Teacher registration number is required")]
+		[Required(ErrorMessage = "Student registration number is required")]
 		[DisplayName("Registration No")]
 		public string StudentRegNo { get; set; }
-		[Required(ErrorMessage = "Teacher First Name is required")]
+		[Required(ErrorMessage = "Student First Name is required")]
 		[DisplayName("First Name")]
 		public string FirstName { get; set; }
 		[DisplayName("Middle Name")]
 		public string MiddleName { get; set; }
-		[Required(ErrorMessage = "Teacher Last Name is required")]
+		[Required(ErrorMessage = "Student Last Name is required")]
 		[DisplayName("Last Name")]
 		public string LastName { get; set; }
-		[Required(ErrorMessage = "Teacher Display Name is required")]
+		[Required(ErrorMessage = "Student Display Name is required")]
 		[DisplayName("Display Name")]
 		public string DisplayName { get; set; }
 		[Required(ErrorMessage = "Email is required")]

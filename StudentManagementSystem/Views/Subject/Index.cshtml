@@ -1,0 +1,74 @@
+﻿@model SMS.ViewModel.Subject.SubjectViewModel
+
+@{
+    ViewData["Title"] = "Subject";
+}
+
+<div class="full-body">
+    <div id="heading" class="main-heading"><h2>Subjects</h2></div>
+    <div class="panel container-fluid mb-5" id="hidable_details">
+        <div class="panel-heading d-flex align-items-center justify-content-between">
+            <div>
+                <button id="addNew" class="btn me-3 text-light">Add New Subject</button>
+            </div>
+            <div>
+                @* <button type="button" class="btn btn-primary" onclick="downloadExcel()">Download Excel</button> *@
+                <button id="downloadExcelButton" class="btn pdf-btn text-light">Download Excel</button>
+
+                <button class="btn me-2 pdf-btn text-light" onclick="window.location.href='@Url.Action("DownloadPdf", "Subject")'">Download PDF</button>
+            </div>
+
+            <div class="d-flex align-items-center">
+                <form class="d-flex" id="paginationForm">
+                    <div class="me-3">
+                        <select asp-for="PageSize" id="pageSize" class="form-select text-dark">
+                            <option value="5" selected>5</option>
+                            <option value="10">10</option>
+                            <option value="15">15</option>
+                        </select>
+                    </div>
+
+                    <div class="me-3">
+                        <select asp-for="IsEnable" id="filterCriteria" class="form-select text-dark">
+                            <option value="" selected>All</option>
+                            <option value="true">Enabled</option>
+                            <option value="false">Disabled</option>
+                        </select>
+                    </div>
+                </form>
+                <div>
+                    <form id="searchForm">
+                        <div class="search-wrapper">
+                            <select asp-for="SubjectSearch.SubjectSearchCriteria" id="searchCriteria" class="form-select text-dark me-2">
+                                <option value="" selected>All Search</option>
+                                <option value="SubjectCode">Subject Code</option>
+                                <option value="SubjectName">Subject Name</option>
+                            </select>
+
+                            <input asp-for="SubjectSearch.SubjectSearchQuery" type="text" id="searchQuery" class="form-control" placeholder="Search...">
+                        </div>
+                    </form>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+    
+
+
+    <div class="addEdit">
+        <div id="addSubjectForm" class="container-fluid" style="display: none;">
+        </div>
+    </div>
+
+    @* <div id="searchResults"></div> *@
+
+    <div id="subjectsList"></div>
+
+</div>
+
+@section Scripts {
+    <script src="~/js/subject.js" asp-append-version="true"></script>
+}

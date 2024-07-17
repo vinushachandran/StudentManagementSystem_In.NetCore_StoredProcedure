@@ -13,19 +13,21 @@ namespace SMS.BL.NLog.Interface
 {
     public interface INLogRepository
     {
-        RepositoryResponse<IEnumerable<NLogBO>> GetAllNLogs(NLogDateFilterViewModel dateFilterViewModel);
-
-        RepositoryResponse<IEnumerable<NLogBO>> GetLogsByDateRange(NLogDateFilterViewModel dateFilterViewModel);
+        RepositoryResponse<IEnumerable<NLogBO>> GetAllNLogs(NLogViewModel nLogViewModel);        
 
         RepositoryResponse<IEnumerable<NLogBO>> GetLogsByLevel(string level);
 
         RepositoryResponse<LogCountBO> GetLogLevelCounts();
 
-        RepositoryResponse<LogCountBO> GetLogLevelCountByMonth();
+        RepositoryResponse <IEnumerable<LogLevelCountsViewModel>> GetLogLevelCountByMonth();
 
-        RepositoryResponse<LogCountBO> GetLogLevelCountsByFilter(NLogDateFilterViewModel dateFilterViewModel);
+        RepositoryResponse<IEnumerable<LogLevelCountsViewModel>> GetLogLevelCountByDay(NLogViewModel nLogViewModel);
 
-        //RepositoryResponse<List<LogCountBO>> GetDailyLogCountsByFilter(NLogDateFilterViewModel dateFilterViewModel);
+
+
+        RepositoryResponse<LogCountBO> GetLogLevelCountsByFilter(NLogViewModel nLogViewModel);
+
+       
 
 
 

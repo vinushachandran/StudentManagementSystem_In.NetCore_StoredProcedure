@@ -37,7 +37,7 @@
                         
                         </td>
                         <td>@item.Gender</td>
-                        <td>@item.DOB</td>
+                        <td>@String.Format("{0:" + SMS.Common.DateFormat.defaultDateFormat + "}", item.DOB)</td>
                         <td>@item.Address</td>
                         <td>
                             <i class="bi bi-telephone" data-toggle="tooltip" title="@item.ContactNo" data-contact="@item.ContactNo" onclick="copyToClipboard(this)" style="cursor: pointer;"></i>
@@ -48,7 +48,7 @@
                             <button type="button" class="btn btn-sm btn-primary" id="editBtn_@item.StudentID" onclick="editStudent('@item.StudentID')"><i class='bi bi-pencil-fill'></i></button>
                             <button type="button" class="btn btn-sm btn-danger" id="deleteBtn_@item.StudentID" onclick="deleteStudent('@item.StudentID',false,'@item.DisplayName')"><i class="bi bi-trash"></i></button>
                             <span id="allocated_@item.StudentID" class='btn btn-primary'>Allocated</span>
-                            <button type="button" class="btn btn-sm btn-info m-1" onclick="showStudentDetails('@item.StudentID')"><i class='bi bi-files'></i></button>
+                            <button type="button" class="btn btn-sm btn-info m-1" onclick="showStudentDetails('@item.StudentID')"><i class="bi bi-three-dots-vertical"></i></button>
 
                         </td>
                     </tr>

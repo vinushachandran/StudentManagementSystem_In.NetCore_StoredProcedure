@@ -4,6 +4,9 @@
     ViewData["Title"] = "Add Student";
 }
 
+@{
+    var dateFormat = SMS.Common.DateFormat.defaultDateFormat;
+}
 <form id="studentForm" asp-action="UpsertStudent" asp-controller="Student" method="post" class="border p-4 mx-auto" style="max-width: 600px;">
     <input type="hidden" asp-for="StudentID" />
 
@@ -94,10 +97,10 @@
 
         <div class="form-group row m-2">
             <div class="col-md-4">
-                @Html.LabelFor(model => model.DOB, htmlAttributes: new { @class = "control-label col-md-2" })<span class="required-asterisk text-danger">&nbsp;&nbsp;*</span>
+                <label asp-for="DOB"></label><span class="required-asterisk text-danger">&nbsp;&nbsp;*</span>
             </div>
             <div class="col-md-8">
-                @Html.TextBoxFor(model => model.DOB, "{0:MM-dd-yyyy}", new { @class = "form-control", placeholder = "MM-DD-YYYY", id = "DOB" })
+                @Html.TextBoxFor(model => model.DOB, new { @class = "form-control", placeholder = "DD-MM-YYYY", id = "DOB" })
                 @Html.ValidationMessageFor(model => model.DOB, "", new { @class = "text-danger" })
             </div>
         </div>
@@ -151,30 +154,30 @@
     $(document).ready(function () {
         $('#studentForm').submit(function (e) {
             e.preventDefault();
-
-            // Perform Ajax request
             $.ajax({
-                url: $(this).attr('action'), // Action URL specified in form tag
-                type: $(this).attr('method'), // HTTP method (post/get)
-                data: $(this).serialize(), // Serialize form data
+                url: $(this).attr('action'),
+                type: $(this).attr('method'), 
+                data: $(this).serialize(), 
                 success: function (response) {
-                    // Handle success
                     addStudentSuccess(response);
                 },
                 error: function (xhr, status, error) {
-                    // Handle errors
                     addStudentFailure(xhr);
                 }
             });
         });
     });
+
+    //Date picker
+    var dateFormat = "@dateFormat".replace(/yy/g, "y").replace(/M/g, "m");
+    var today = new Date();
     $("#DOB").datepicker({
-        dateFormat: "mm-dd-yy",
+        dateFormat: dateFormat,
         changeYear: true,
         changeMonth: true,
-        yearRange: "-100:+0", 
-        maxDate: "0" 
-    });
+        yearRange: "-100:+0",
+        maxDate: "0",
+    }).datepicker("setDate", today);
 
     //Check Registration Number already exists
     $('#StudentRegNo').change(function () {

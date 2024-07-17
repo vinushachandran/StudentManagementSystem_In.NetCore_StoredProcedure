@@ -1,0 +1,38 @@
+﻿@model SMS.ViewModel.Teacher.TeacherViewModel
+
+<h2>Teacher List</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Registration No</th>
+            <th>First Name</th>
+            <th>Middle Name</th>
+            <th>Last Name</th>
+            <th>Display Name</th>
+            <th>Email</th>
+            <th>Gender</th>
+            <th>Date Of Birth</th>
+            <th>Address</th>
+            <th>Contact No</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var teacher in Model.Teachers)
+        {
+            <tr>
+                <td>@teacher.TeacherRegNo</td>
+                <td>@teacher.FirstName</td>
+                <td>@teacher.MiddleName</td>
+                <td>@teacher.LastName</td>
+                <td>@teacher.DisplayName</td>
+                <td>@teacher.Email</td>
+                <td>@teacher.Gender</td>
+                <td>@String.Format("{0:" + SMS.Common.DateFormat.defaultDateFormat + "}", teacher.DOB)</td>
+                <td>@teacher.Address</td>
+                <td>@teacher.ContactNo</td>
+                <td>@(teacher.IsEnable ? "Enabled" : "Disabled")</td>
+            </tr>
+        }
+    </tbody>
+</table>
